@@ -4,6 +4,7 @@ import {
 } from "@openrouter/ai-sdk-provider"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { anonymous } from "better-auth/plugins"
 import { type DrizzleD1Database, drizzle } from "drizzle-orm/d1"
 import { type AppLoadContext, createRequestHandler } from "react-router"
 import * as schema from "~/database/schema"
@@ -38,7 +39,7 @@ export default {
         provider: "sqlite",
       }),
       emailAndPassword: {
-        enabled: true,
+        enabled: false,
       },
       socialProviders: {
         google: {
@@ -46,6 +47,7 @@ export default {
           clientSecret: env.GOOGLE_CLIENT_SECRET,
         },
       },
+      plugins: [anonymous()],
     })
 
     return requestHandler(request, {
