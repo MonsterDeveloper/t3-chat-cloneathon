@@ -8,11 +8,12 @@
     "db:generate": "dotenv -- drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply --local DB",
     "db:migrate-production": "dotenv -- drizzle-kit migrate",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "bun run build && wrangler deploy",
     "dev": "react-router dev",
-    "postinstall": "npm run cf-typegen",
-    "preview": "npm run build && vite preview",
-    "typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
+    "postinstall": "bun run cf-typegen",
+    "preview": "bun run build && vite preview",
+    "typecheck": "bun run cf-typegen && react-router typegen && tsc -b",
+    "check": "biome check"
   },
   "dependencies": {
     "drizzle-orm": "~0.36.3",
@@ -22,7 +23,9 @@
     "react-router": "^7.5.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@cloudflare/vite-plugin": "^1.0.12",
+    "@cto_of_everything/biome-config": "^1.1.5",
     "@react-router/dev": "^7.5.3",
     "@tailwindcss/vite": "^4.1.4",
     "@types/node": "^20",

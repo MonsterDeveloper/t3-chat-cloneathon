@@ -1,4 +1,4 @@
-import type { Config } from "drizzle-kit";
+import type { Config } from "drizzle-kit"
 
 export default {
   out: "./drizzle",
@@ -10,4 +10,4 @@ export default {
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
     token: process.env.CLOUDFLARE_TOKEN!,
   },
-} satisfies Config;
+} satisfies Config

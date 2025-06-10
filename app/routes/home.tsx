@@ -1,33 +1,33 @@
-import * as schema from "~/database/schema";
+import * as schema from "~/database/schema"
 
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { Welcome } from "../welcome/welcome"
+import type { Route } from "./+types/home"
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "New React Router App" },
     { name: "description", content: "Welcome to React Router!" },
-  ];
+  ]
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const formData = await request.formData();
-  let name = formData.get("name");
-  let email = formData.get("email");
+  const formData = await request.formData()
+  let name = formData.get("name")
+  let email = formData.get("email")
   if (typeof name !== "string" || typeof email !== "string") {
-    return { guestBookError: "Name and email are required" };
+    return { guestBookError: "Name and email are required" }
   }
 
-  name = name.trim();
-  email = email.trim();
+  name = name.trim()
+  email = email.trim()
   if (!name || !email) {
-    return { guestBookError: "Name and email are required" };
+    return { guestBookError: "Name and email are required" }
   }
 
   try {
-    await context.db.insert(schema.guestBook).values({ name, email });
-  } catch (error) {
-    return { guestBookError: "Error adding to guest book" };
+    await context.db.insert(schema.guestBook).values({ name, email })
+  } catch {
+    return { guestBookError: "Error adding to guest book" }
   }
 }
 
@@ -37,12 +37,12 @@ export async function loader({ context }: Route.LoaderArgs) {
       id: true,
       name: true,
     },
-  });
+  })
 
   return {
     guestBook,
     message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE,
-  };
+  }
 }
 
 export default function Home({ actionData, loaderData }: Route.ComponentProps) {
@@ -52,5 +52,5 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
       guestBookError={actionData?.guestBookError}
       message={loaderData.message}
     />
-  );
+  )
 }

@@ -1,0 +1,61 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["@cto_of_everything/biome-config"],
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "ignore": [
+      "drizzle/**/*",
+      "worker-configuration.d.ts",
+      ".react-router/**/*"
+    ]
+  },
+  "formatter": {
+    "enabled": true
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noConsole": "info"
+      },
+      "style": {
+        "noParameterAssign": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "include": ["*.ts"],
+      "javascript": {
+        "globals": ["Env", "ExecutionContext", "ExportedHandler"]
+      }
+    },
+    {
+      "include": [
+        "app/routes/**/*",
+        "app/root.tsx",
+        "app/routes.ts",
+        "workers/app.ts",
+        "react-router.config.ts",
+        "drizzle.config.ts",
+        "entry.server.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ]
+}
