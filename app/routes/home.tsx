@@ -20,7 +20,6 @@ export async function loader({ context }: Route.LoaderArgs) {
 
   return {
     guestBook,
-    message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE,
   }
 }
 
@@ -29,7 +28,6 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
     <Welcome
       guestBook={loaderData.guestBook}
       guestBookError={actionData?.guestBookError}
-      message={loaderData.message}
     />
   )
 }
