@@ -12,6 +12,7 @@
     "dev": "react-router dev",
     "preview": "bun run build && vite preview",
     "typecheck": "bun run cf-typegen && react-router typegen && tsc -b",
+    "db:studio": "drizzle-kit studio",
     "check": "biome check"
   },
   "dependencies": {
