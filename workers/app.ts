@@ -6,7 +6,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { type DrizzleD1Database, drizzle } from "drizzle-orm/d1"
 import { type AppLoadContext, createRequestHandler } from "react-router"
-import * as schema from "../database/schema"
+import * as schema from "~/database/schema"
 
 declare module "react-router" {
   export interface AppLoadContext {
