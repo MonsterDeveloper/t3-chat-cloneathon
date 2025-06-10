@@ -1,13 +1,13 @@
-import type * as React from "react";
-import { AppSidebar } from "~/components/app-sidebar";
-import { SiteHeader } from "~/components/site-header";
-import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
+import type * as React from "react"
+import { AppSidebar } from "~/components/app-sidebar"
+import { SiteHeader } from "~/components/site-header"
+import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
 
 export function meta() {
   return [
     { title: "not T3 Chat" },
     { name: "description", content: "Define your goal for the chat." },
-  ];
+  ]
 }
 
 export default function Chat() {
@@ -34,5 +34,5 @@ export default function Chat() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }
