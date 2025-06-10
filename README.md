@@ -1,25 +1,14 @@
-# Welcome to React Router!
-
-A modern, production-ready template for building full-stack React applications using React Router.
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
 ## Getting Started
 
 ### Installation
 
+- Install [Bun](https://bun.sh/)
+- Install [Node.js](https://nodejs.org/)
+
 Install the dependencies:
 
 ```bash
-npm install
+bun i
 ```
 
 ### Development
@@ -27,13 +16,13 @@ npm install
 Run an initial database migration:
 
 ```bash
-npm run db:migrate
+bun db:push
 ```
 
 Start the development server with HMR:
 
 ```bash
-npm run dev
+bun dev
 ```
 
 Your application will be available at `http://localhost:5173`.
@@ -43,7 +32,7 @@ Your application will be available at `http://localhost:5173`.
 Create a production build:
 
 ```bash
-npm run build
+bun run build
 ```
 
 ## Deployment
@@ -53,7 +42,7 @@ Deployment is done using the Wrangler CLI.
 First, you need to create a d1 database in Cloudflare.
 
 ```sh
-npx wrangler d1 create <name-of-your-database>
+bunx wrangler d1 create <name-of-your-database>
 ```
 
 Be sure to update the `wrangler.toml` file with the correct database name and id.
@@ -61,25 +50,29 @@ Be sure to update the `wrangler.toml` file with the correct database name and id
 You will also need to [update the `drizzle.config.ts` file](https://orm.drizzle.team/docs/guides/d1-http-with-drizzle-kit), and then run the production migration:
 
 ```sh
-npm run db:migrate-production
+bun db:generate
+```
+
+```sh
+bun db:migrate
 ```
 
 To build and deploy directly to production:
 
 ```sh
-npm run deploy
+bun run deploy
 ```
 
 To deploy a preview URL:
 
 ```sh
-npx wrangler versions upload
+bunx wrangler versions upload
 ```
 
 You can then promote a version to production after verification or roll it out progressively.
 
 ```sh
-npx wrangler versions deploy
+bunx wrangler versions deploy
 ```
 
 ## Styling
