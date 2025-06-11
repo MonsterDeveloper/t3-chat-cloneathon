@@ -18,7 +18,7 @@ body {
 }
 
 :root {
-  --background: oklch(0.9754 0.0084 325.6414);
+  --background: hsl(293.7 46.3% 92%);
   --foreground: oklch(0.3257 0.1161 325.0372);
   --card: oklch(0.9754 0.0084 325.6414);
   --card-foreground: oklch(0.3257 0.1161 325.0372);
@@ -181,5 +181,16 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Text selection styles for light mode */
+  ::selection {
+    background-color: var(--ring);
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: var(--ring);
+    color: white;
   }
 }
