@@ -1,5 +1,6 @@
-import { ArrowUp, Paperclip } from "lucide-react"
+import { ArrowUp, Paperclip, Square } from "lucide-react"
 
+import type { useChat } from "@ai-sdk/react"
 import type { ChatRequestOptions } from "ai"
 import { type ChangeEvent, type FormEvent, useState } from "react"
 import { Button } from "~/components/ui/button"
@@ -39,6 +40,8 @@ export function ChatInputBox({
   value,
   onChange,
   onSubmit,
+  status,
+  stop,
 }: {
   value: string
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void
@@ -46,9 +49,10 @@ export function ChatInputBox({
     event: FormEvent<HTMLFormElement>,
     options: ChatRequestOptions,
   ) => void
+  status: ReturnType<typeof useChat>["status"]
+  stop: () => void
 }) {
   const [model, setModel] = useState<Model>(models[0])
-  console.log(model)
 
   return (
     <div className="pointer-events-none absolute bottom-0 z-10 w-full px-2">
@@ -93,13 +97,20 @@ export function ChatInputBox({
                       className="-mr-0.5 -mt-0.5 flex items-center justify-center gap-2"
                       aria-label="Message actions"
                     >
-                      <Button
-                        type="submit"
-                        aria-label="Message requires text"
-                        disabled={value.length === 0}
-                      >
-                        <ArrowUp className="!size-5" />
-                      </Button>
+                      {status === "streaming" || status === "submitted" ? (
+                        <Button type="button" className="size-9" onClick={stop}>
+                          <Square className="!size-5 fill-current" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          aria-label="Message requires text"
+                          disabled={value.length === 0}
+                          className="size-9"
+                        >
+                          <ArrowUp className="!size-5" />
+                        </Button>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2 pr-2 sm:flex-row sm:items-center">
                       <div className="ml-[-7px] flex items-center gap-1">

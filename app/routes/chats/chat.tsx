@@ -38,7 +38,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 }
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat()
+  const { messages, input, handleInputChange, handleSubmit, status, stop } =
+    useChat()
 
   console.log(messages)
 
@@ -69,6 +70,8 @@ export default function Chat() {
                 value={input}
                 onChange={handleInputChange}
                 onSubmit={handleSubmit}
+                status={status}
+                stop={stop}
               />
             </div>
           </div>
