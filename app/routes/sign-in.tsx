@@ -1,7 +1,7 @@
 import { UserX } from "lucide-react"
 import type { ComponentProps } from "react"
 import { redirect, useNavigate } from "react-router"
-import { signIn } from "~/auth-client"
+import { signIn } from "~/lib/auth-client"
 import { cn } from "~/lib/utils"
 import type { Route } from "./+types/sign-in"
 
@@ -11,7 +11,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   })
 
   if (session) {
-    return redirect("/chat")
+    return redirect("/chats")
   }
 
   return null
@@ -78,7 +78,7 @@ export default function SignInPage() {
             signIn.anonymous({
               fetchOptions: {
                 onSuccess: () => {
-                  navigate("/chat", { replace: true })
+                  navigate("/chats", { replace: true })
                 },
               },
             })

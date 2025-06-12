@@ -3,11 +3,11 @@ import {
   IconHelp,
   IconSearch,
   IconSettings,
-} from "@tabler/icons-react";
-import type * as React from "react";
-import { Link } from "react-router";
-import { NavMain } from "~/components/nav-main";
-import { NavSecondary } from "~/components/nav-secondary";
+} from "@tabler/icons-react"
+import type * as React from "react"
+import { Link } from "react-router"
+import { NavMain } from "~/components/nav-main"
+import { NavSecondary } from "~/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarTrigger,
-} from "~/components/ui/sidebar";
+} from "~/components/ui/sidebar"
 
 const data = {
   user: {
@@ -47,7 +47,7 @@ const data = {
       icon: IconHelp,
     },
   ],
-};
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -140,5 +140,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>
-  );
+  )
 }

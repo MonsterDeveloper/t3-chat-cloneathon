@@ -1,7 +1,7 @@
-import { Check, ChevronDown } from "lucide-react";
-import * as React from "react";
+import { Check, ChevronDown } from "lucide-react"
+import * as React from "react"
 
-import { Button } from "~/components/ui/button";
+import { Button } from "~/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -9,30 +9,30 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "~/components/ui/command";
+} from "~/components/ui/command"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "~/components/ui/popover";
-import { cn } from "~/lib/utils";
+} from "~/components/ui/popover"
+import { cn } from "~/lib/utils"
 
 export interface Model {
-  id: string;
-  value: string;
-  label: string;
-  provider: "meta" | "openai" | "anthropic" | "google";
+  value: string
+  label: string
+  provider: "meta" | "openai" | "anthropic" | "google"
 }
 
 export function ModelPopover({
   models,
-  onModelChange,
+  value,
+  onValueChange,
 }: {
-  models: Model[];
-  onModelChange: (model: string) => void;
+  models: Model[]
+  value: string
+  onValueChange: (model: string) => void
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,7 +45,7 @@ export function ModelPopover({
           className="w-[200px] justify-between"
         >
           {value
-            ? models.find((model) => model.id === value)?.label
+            ? models.find((model) => model.value === value)?.label
             : "Select model..."}
           <ChevronDown className="opacity-50" />
         </Button>
@@ -58,19 +58,18 @@ export function ModelPopover({
             <CommandGroup>
               {models.map((model) => (
                 <CommandItem
-                  key={model.id}
-                  value={model.id}
+                  key={model.value}
+                  value={model.value}
                   onSelect={(currentValue) => {
-                    onModelChange(currentValue === value ? "" : currentValue);
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
+                    onValueChange(currentValue === value ? "" : currentValue)
+                    setOpen(false)
                   }}
                 >
                   {model.label}
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === model.id ? "opacity-100" : "opacity-0"
+                      value === model.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                 </CommandItem>
@@ -80,5 +79,5 @@ export function ModelPopover({
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

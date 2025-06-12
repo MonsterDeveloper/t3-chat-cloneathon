@@ -1,29 +1,47 @@
-import { Moon, Search, Settings2 } from "lucide-react";
-import { Plus } from "lucide-react";
-import type * as React from "react";
-import { AppSidebar } from "~/components/app-sidebar";
-import { ChatInputBox } from "~/components/chat-box";
-import { SiteHeader } from "~/components/site-header";
-import { Button } from "~/components/ui/button";
+import { useChat } from "@ai-sdk/react"
+import { Moon, Search, Settings2 } from "lucide-react"
+import { Plus } from "lucide-react"
+import type * as React from "react"
+import { redirect } from "react-router"
+import { AppSidebar } from "~/components/app-sidebar"
+import { ChatInputBox } from "~/components/chat-box"
+import { SiteHeader } from "~/components/site-header"
+import { Button } from "~/components/ui/button"
 import {
   SidebarInset,
   SidebarProvider,
   useSidebar,
-} from "~/components/ui/sidebar";
-import { SidebarTrigger } from "~/components/ui/sidebar";
-import { Tooltip } from "~/components/ui/tooltip";
-import { TooltipTrigger } from "~/components/ui/tooltip";
-import { TooltipContent } from "~/components/ui/tooltip";
-import { cn } from "~/lib/utils";
+} from "~/components/ui/sidebar"
+import { SidebarTrigger } from "~/components/ui/sidebar"
+import { Tooltip } from "~/components/ui/tooltip"
+import { TooltipTrigger } from "~/components/ui/tooltip"
+import { TooltipContent } from "~/components/ui/tooltip"
+import { cn } from "~/lib/utils"
+import type { Route } from "./+types/chat"
 
 export function meta() {
   return [
     { title: "not T3 Chat" },
     { name: "description", content: "Define your goal for the chat." },
-  ];
+  ]
+}
+
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const session = await context.auth.api.getSession({
+    headers: request.headers,
+  })
+
+  if (!session) {
+    return redirect("/sign-in")
+  }
+  return null
 }
 
 export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat()
+
+  console.log(messages)
+
   return (
     <SidebarProvider
       style={
@@ -47,24 +65,28 @@ export default function Chat() {
               </div>
             </div>
             <div className="absolute inset-x-0 bottom-0">
-              <ChatInputBox />
+              <ChatInputBox
+                value={input}
+                onChange={handleInputChange}
+                onSubmit={handleSubmit}
+              />
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }
 
 const LeftFloatingControls = () => {
-  const { state } = useSidebar();
+  const { state } = useSidebar()
   return (
     <div
       className={cn(
         "pointer-events-auto absolute top-4 left-4 z-50 flex items-center justify-center gap-2 rounded-sm bg-accent px-2",
         {
           hidden: state === "expanded",
-        }
+        },
       )}
     >
       <Tooltip>
@@ -97,10 +119,10 @@ const LeftFloatingControls = () => {
         </TooltipContent>
       </Tooltip>
     </div>
-  );
-};
+  )
+}
 const RightFloatingControls = () => {
-  const { state } = useSidebar();
+  const { state } = useSidebar()
 
   return (
     <div
@@ -108,7 +130,7 @@ const RightFloatingControls = () => {
         "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-2 rounded-sm bg-accent px-2",
         {
           hidden: state === "expanded",
-        }
+        },
       )}
     >
       <Tooltip>
@@ -133,5 +155,5 @@ const RightFloatingControls = () => {
         </TooltipContent>
       </Tooltip>
     </div>
-  );
-};
+  )
+}

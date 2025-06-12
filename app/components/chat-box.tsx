@@ -1,31 +1,55 @@
-import { ArrowUp, Paperclip } from "lucide-react";
+import { ArrowUp, Paperclip } from "lucide-react"
 
-import { Button } from "~/components/ui/button";
-import { type Model, ModelPopover } from "./model-popover";
-import { Label } from "./ui/label";
+import type { ChatRequestOptions } from "ai"
+import { type ChangeEvent, type FormEvent, useState } from "react"
+import { Button } from "~/components/ui/button"
+import { type Model, ModelPopover } from "./model-popover"
+import { Label } from "./ui/label"
 
+// https://openrouter.ai/models
 const models = [
   {
-    id: "claude-3-5-sonnet",
-    label: "Claude 3.5 Sonnet",
-    value: "claude-3-5-sonnet",
-    provider: "anthropic",
-  },
-  {
-    id: "gpt-4o",
-    label: "GPT-4o",
-    value: "gpt-4o",
+    label: "GPT-4o-mini",
+    value: "openai/gpt-4o-mini",
     provider: "openai",
   },
   {
-    id: "gemini-2.0-flash",
-    label: "Gemini 2.0 Flash",
-    value: "gemini-2.0-flash",
+    label: "GPT-4o",
+    value: "openai/gpt-4o",
+    provider: "openai",
+  },
+  {
+    label: "Claude 3.5 Sonnet",
+    value: "anthropic/claude-3.5-sonnet",
+    provider: "anthropic",
+  },
+  {
+    label: "Claude 3.7 Sonnet",
+    value: "anthropic/claude-3.7-sonnet",
+    provider: "anthropic",
+  },
+  {
+    label: "Gemini 2.5 Flash Preview 05-20",
+    value: "google/gemini-2.5-flash-preview-05-20",
     provider: "google",
   },
-] satisfies Model[];
+] satisfies Model[]
 
-export function ChatInputBox() {
+export function ChatInputBox({
+  value,
+  onChange,
+  onSubmit,
+}: {
+  value: string
+  onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void
+  onSubmit: (
+    event: FormEvent<HTMLFormElement>,
+    options: ChatRequestOptions,
+  ) => void
+}) {
+  const [model, setModel] = useState<Model>(models[0])
+  console.log(model)
+
   return (
     <div className="pointer-events-none absolute bottom-0 z-10 w-full px-2">
       <div className="relative mx-auto flex max-w-3xl flex-col text-center">
@@ -37,6 +61,13 @@ export function ChatInputBox() {
                 style={{
                   boxShadow:
                     "rgba(0, 0, 0, 0.1) 0px 80px 50px 0px, rgba(0, 0, 0, 0.07) 0px 50px 30px 0px, rgba(0, 0, 0, 0.06) 0px 30px 15px 0px, rgba(0, 0, 0, 0.04) 0px 15px 8px, rgba(0, 0, 0, 0.04) 0px 6px 4px, rgba(0, 0, 0, 0.02) 0px 2px 2px",
+                }}
+                onSubmit={(event) => {
+                  onSubmit(event, {
+                    data: {
+                      model: model.value,
+                    },
+                  })
                 }}
               >
                 <div className="flex flex-grow flex-col">
@@ -50,6 +81,8 @@ export function ChatInputBox() {
                       aria-describedby="chat-input-description"
                       autoComplete="off"
                       style={{ height: "48px !important" }}
+                      value={value}
+                      onChange={onChange}
                     />
                     <div id="chat-input-description" className="sr-only">
                       Press Enter to send, Shift + Enter for new line
@@ -63,7 +96,7 @@ export function ChatInputBox() {
                       <Button
                         type="submit"
                         aria-label="Message requires text"
-                        disabled
+                        disabled={value.length === 0}
                       >
                         <ArrowUp className="!size-5" />
                       </Button>
@@ -72,7 +105,12 @@ export function ChatInputBox() {
                       <div className="ml-[-7px] flex items-center gap-1">
                         <ModelPopover
                           models={models}
-                          onModelChange={() => null}
+                          value={model?.value ?? ""}
+                          onValueChange={(value) => {
+                            setModel(
+                              models.find((model) => model.value === value)!,
+                            )
+                          }}
                         />
                         <Label>
                           <input type="file" />
@@ -94,5 +132,5 @@ export function ChatInputBox() {
         </div>
       </div>
     </div>
-  );
+  )
 }

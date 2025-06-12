@@ -1,21 +1,21 @@
-import { type Icon, IconCirclePlusFilled } from "@tabler/icons-react";
+import { type Icon, IconCirclePlusFilled } from "@tabler/icons-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "~/components/ui/sidebar";
-import { Input } from "./ui/input";
+} from "~/components/ui/sidebar"
+import { Input } from "./ui/input"
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string;
-    url: string;
-    icon?: Icon;
-  }[];
+    title: string
+    url: string
+    icon?: Icon
+  }[]
 }) {
   return (
     <SidebarGroup>
@@ -55,10 +55,10 @@ export function NavMain({
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            )
+            ),
           )}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  );
+  )
 }
