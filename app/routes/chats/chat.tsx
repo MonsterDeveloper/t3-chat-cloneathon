@@ -1,4 +1,5 @@
 import { useChat } from "@ai-sdk/react"
+import { and, eq } from "drizzle-orm"
 import { Moon, Search, Settings2 } from "lucide-react"
 import { Plus } from "lucide-react"
 import type * as React from "react"
@@ -16,6 +17,7 @@ import { SidebarTrigger } from "~/components/ui/sidebar"
 import { Tooltip } from "~/components/ui/tooltip"
 import { TooltipTrigger } from "~/components/ui/tooltip"
 import { TooltipContent } from "~/components/ui/tooltip"
+import { chatsTable } from "~/database/schema"
 import { cn } from "~/lib/utils"
 import type { Route } from "./+types/chat"
 
@@ -26,7 +28,11 @@ export function meta() {
   ]
 }
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+export async function loader({
+  context,
+  request,
+  params: { chatId },
+}: Route.LoaderArgs) {
   const session = await context.auth.api.getSession({
     headers: request.headers,
   })
@@ -34,14 +40,42 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   if (!session) {
     return redirect("/sign-in")
   }
-  return null
+
+  const chat = await context.db.query.chatsTable.findFirst({
+    where: and(
+      eq(chatsTable.id, chatId),
+      eq(chatsTable.userId, session.user.id),
+    ),
+    with: {
+      messages: true,
+    },
+  })
+
+  if (!chat) {
+    throw new Response("Not Found", { status: 404 })
+  }
+
+  return {
+    chatId,
+    initialMessages: chat.messages.map((message) => {
+      return {
+        ...JSON.parse(message.content),
+        createdAt: message.createdAt,
+        id: message.id,
+      }
+    }),
+  }
 }
 
-export default function Chat() {
+export default function Chat({
+  loaderData: { chatId, initialMessages },
+}: Route.ComponentProps) {
   const { messages, input, handleInputChange, handleSubmit, status, stop } =
-    useChat()
-
-  console.log(messages)
+    useChat({
+      id: chatId,
+      initialMessages,
+      sendExtraMessageFields: true,
+    })
 
   return (
     <SidebarProvider
