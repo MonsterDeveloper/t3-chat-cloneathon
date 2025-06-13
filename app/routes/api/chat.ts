@@ -2,6 +2,7 @@ import { type Message, appendResponseMessages, streamText } from "ai"
 import { and, eq, sql } from "drizzle-orm"
 import { redirect } from "react-router"
 import { chatsTable, messagesTable } from "~/database/schema"
+import { generateChatTitle } from "~/lib/generate-chat-title.server"
 import type { Route } from "./+types/chat"
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -60,16 +61,17 @@ export async function action({ request, context }: Route.ActionArgs) {
           set: { content: sql.raw(`excluded.${messagesTable.content.name}`) },
         })
 
-      console.log(
-        JSON.stringify(
-          {
-            chatId,
-            fullMessages,
-          },
-          null,
-          2,
-        ),
-      )
+      if (!chat.title) {
+        await context.db
+          .update(chatsTable)
+          .set({
+            title: await generateChatTitle(
+              context.openrouter,
+              fullMessages[0].content,
+            ),
+          })
+          .where(eq(chatsTable.id, chatId))
+      }
     },
   })
 
