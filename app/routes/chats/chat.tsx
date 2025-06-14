@@ -54,6 +54,7 @@ export async function loader({
         id: chatsTable.id,
         title: chatsTable.title,
         createdAt: chatsTable.createdAt,
+        isPinned: chatsTable.isPinned,
         messageCount: sql<number>`count(${messagesTable.id})`.as(
           "message_count",
         ),
@@ -193,4 +194,85 @@ const RightFloatingControls = () => {
       </ToolTipButton>
     </div>
   )
+}
+
+export async function action({
+  context,
+  request,
+  params: { chatId },
+}: Route.ActionArgs) {
+  const session = await context.auth.api.getSession({
+    headers: request.headers,
+  })
+
+  if (!session) {
+    return redirect("/sign-in")
+  }
+
+  const chat = await context.db.query.chatsTable.findFirst({
+    where: and(
+      eq(chatsTable.id, chatId),
+      eq(chatsTable.userId, session.user.id),
+    ),
+    columns: {
+      id: true,
+    },
+  })
+
+  if (!chat) {
+    return redirect("/chats")
+  }
+
+  const formData = await request.formData()
+  const intent = String(formData.get("intent"))
+
+  if (intent === "delete") {
+    await context.db
+      .delete(chatsTable)
+      .where(
+        and(eq(chatsTable.id, chatId), eq(chatsTable.userId, session.user.id)),
+      )
+
+    return redirect("/chats")
+  }
+
+  if (intent === "rename") {
+    const title = String(formData.get("title")).trim()
+
+    if (title.length === 0) {
+      return {
+        error: "Title is required",
+      }
+    }
+
+    await context.db
+      .update(chatsTable)
+      .set({ title })
+      .where(
+        and(eq(chatsTable.id, chatId), eq(chatsTable.userId, session.user.id)),
+      )
+
+    return {
+      success: "Chat renamed",
+    }
+  }
+
+  if (intent === "pin") {
+    const isPinned = formData.get("isPinned") === "true"
+
+    await context.db
+      .update(chatsTable)
+      .set({
+        isPinned,
+      })
+      .where(
+        and(eq(chatsTable.id, chatId), eq(chatsTable.userId, session.user.id)),
+      )
+
+    return {
+      success: "Chat pinned",
+    }
+  }
+
+  throw new Response("Invalid intent", { status: 400 })
 }

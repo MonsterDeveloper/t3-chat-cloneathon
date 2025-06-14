@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm"
-import { sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 import { composeId } from "../app/lib/compose-id"
 import { user } from "./auth-schema"
 
@@ -13,6 +13,7 @@ export const chatsTable = sqliteTable("chats", {
   title: text(),
   createdAt: text("created_at").notNull().default(sql`(current_timestamp)`),
   updatedAt: text("updated_at").$onUpdateFn(() => sql`(current_timestamp)`),
+  isPinned: integer("is_pinned", { mode: "boolean" }).default(false).notNull(),
 })
 
 export const chatsRelations = relations(chatsTable, ({ many }) => ({

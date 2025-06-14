@@ -30,7 +30,7 @@ import { Input } from "./ui/input"
 interface Chat
   extends Pick<
     InferSelectModel<typeof chatsTable>,
-    "id" | "title" | "createdAt"
+    "id" | "title" | "createdAt" | "isPinned"
   > {
   messageCount: number
 }
