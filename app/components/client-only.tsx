@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
-import { useSyncExternalStore } from "react";
+import type { ReactNode } from "react"
+import { useSyncExternalStore } from "react"
 
 function subscribe() {
-	// biome-ignore lint/suspicious/noEmptyBlockStatements: Mock function
-	return () => {};
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: Mock function
+  return () => {}
 }
 
 /**
@@ -24,22 +24,22 @@ function subscribe() {
  * ```
  */
 export function useHydrated() {
-	return useSyncExternalStore(
-		subscribe,
-		() => true,
-		() => false,
-	);
+  return useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  )
 }
 
 type Props = {
-	/**
-	 * You are encouraged to add a fallback that is the same dimensions
-	 * as the client rendered children. This will avoid content layout
-	 * shift which is disgusting
-	 */
-	children(): ReactNode;
-	fallback?: ReactNode;
-};
+  /**
+   * You are encouraged to add a fallback that is the same dimensions
+   * as the client rendered children. This will avoid content layout
+   * shift which is disgusting
+   */
+  children(): ReactNode
+  fallback?: ReactNode
+}
 
 /**
  * Render the children only after the JS has loaded client-side. Use an optional
@@ -57,5 +57,5 @@ type Props = {
  * ```
  */
 export function ClientOnly({ children, fallback = null }: Props) {
-	return useHydrated() ? <>{children()}</> : <>{fallback}</>;
+  return useHydrated() ? <>{children()}</> : <>{fallback}</>
 }

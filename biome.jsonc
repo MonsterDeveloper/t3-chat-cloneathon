@@ -11,7 +11,8 @@
     "ignore": [
       "drizzle/**/*",
       "worker-configuration.d.ts",
-      ".react-router/**/*"
+      ".react-router/**/*",
+      "build/**/*"
     ]
   },
   "formatter": {
