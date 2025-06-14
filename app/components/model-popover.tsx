@@ -42,7 +42,7 @@ export function ModelPopover({
           role="combobox"
           variant="outline"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-fit max-w-2xl justify-between overflow-hidden"
         >
           {value
             ? models.find((model) => model.value === value)?.label

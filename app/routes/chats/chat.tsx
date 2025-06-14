@@ -1,22 +1,20 @@
 import { useChat } from "@ai-sdk/react"
 import { and, eq } from "drizzle-orm"
-import { Moon, Search, Settings2 } from "lucide-react"
-import { Plus } from "lucide-react"
+import { Moon, Plus, Search, Settings2 } from "lucide-react"
 import type * as React from "react"
 import { redirect } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
-import { ChatInputBox } from "~/components/chat-box"
+import { ChatInputBox } from "~/components/chat/chat-box"
+import { ChatMessage } from "~/components/chat/chat-message.client"
+import { ClientOnly } from "~/components/client-only"
 import { SiteHeader } from "~/components/site-header"
-import { Button } from "~/components/ui/button"
+import { Button, ToolTipButton } from "~/components/ui/button"
 import {
   SidebarInset,
   SidebarProvider,
+  SidebarTrigger,
   useSidebar,
 } from "~/components/ui/sidebar"
-import { SidebarTrigger } from "~/components/ui/sidebar"
-import { Tooltip } from "~/components/ui/tooltip"
-import { TooltipTrigger } from "~/components/ui/tooltip"
-import { TooltipContent } from "~/components/ui/tooltip"
 import { chatsTable } from "~/database/schema"
 import { cn } from "~/lib/utils"
 import type { Route } from "./+types/chat"
@@ -90,25 +88,34 @@ export default function Chat({
       <LeftFloatingControls />
       <RightFloatingControls />
       <AppSidebar variant="inset" />
-      <SidebarInset className="m-0 border border-accent shadow-none transition-all duration-300 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:rounded-none md:peer-data-[variant=inset]:mr-0 md:peer-data-[variant=inset]:mb-0">
+      <SidebarInset className="m-0 h-screen overflow-hidden border border-accent bg-card shadow-none transition-all duration-300 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:rounded-none md:peer-data-[variant=inset]:mr-0 md:peer-data-[variant=inset]:mb-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col overflow-scroll pb-24">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="flex h-[80vh] flex-col items-center justify-center gap-4">
-                <h1 className="font-bold text-2xl">Definitely not T3 Chat</h1>
+            <div className="flex flex-col items-center justify-center gap-4 py-4 md:gap-6 md:py-6">
+              <div className="flex w-full max-w-4xl flex-col items-center justify-center gap-4 px-4">
+                <ClientOnly>
+                  {() => typeof ChatMessage === "function" ? messages.map((message) => (
+                  <ChatMessage
+                    key={crypto.randomUUID()}
+                    content={message.content}
+                    role={message.role}
+                    model={"model"}
+                  />
+                )) : null}
+                </ClientOnly>
               </div>
             </div>
-            <div className="absolute inset-x-0 bottom-0">
-              <ChatInputBox
-                value={input}
-                onChange={handleInputChange}
-                onSubmit={handleSubmit}
-                status={status}
-                stop={stop}
-              />
-            </div>
           </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0">
+          <ChatInputBox
+            value={input}
+            onChange={handleInputChange}
+            onSubmit={handleSubmit}
+            status={status}
+            stop={stop}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -116,81 +123,54 @@ export default function Chat({
 }
 
 const LeftFloatingControls = () => {
-  const { state } = useSidebar()
+  const { state, isMobile } = useSidebar()
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute top-4 left-4 z-50 flex items-center justify-center gap-2 rounded-sm bg-accent px-2",
+        "pointer-events-auto absolute top-4 left-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2",
         {
-          hidden: state === "expanded",
+          hidden: state === "expanded" && !isMobile,
         },
       )}
     >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <SidebarTrigger />
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="center" title="Toggle Sidebar">
-          <p>Toggle Sidebar</p>
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-0.5">
-            <Search className="size-5 stroke-2" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="center" title="Search chats">
-          <p>Search chats</p>
-        </TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-0.5">
-            <Plus className="size-5 stroke-2" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="center" title="Add new chat">
-          <p>Add new chat</p>
-        </TooltipContent>
-      </Tooltip>
+      <ToolTipButton content="Toggle Sidebar">
+        <SidebarTrigger />
+      </ToolTipButton>
+      <ToolTipButton content="Search chats">
+        <Button variant="ghost" size="icon" className="p-0.5">
+          <Search className="size-4 stroke-2" />
+        </Button>
+      </ToolTipButton>
+      <ToolTipButton content="New chat">
+        <Button variant="ghost" size="icon" className="p-0.5">
+          <Plus className="size-5 stroke-2" />
+        </Button>
+      </ToolTipButton>
     </div>
   )
 }
 const RightFloatingControls = () => {
-  const { state } = useSidebar()
-
+  const { isMobile } = useSidebar()
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-2 rounded-sm bg-accent px-2",
+        "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2",
         {
-          hidden: state === "expanded",
+          hidden: isMobile,
         },
       )}
     >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-0.5">
-            <Settings2 className="size-5 stroke-2" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="center" title="Settings">
-          <p>Settings</p>
-        </TooltipContent>
-      </Tooltip>
+      <ToolTipButton content="Settings">
+        <Button variant="ghost" size="icon" className="p-0.5">
+          <Settings2 className="size-4" />
+        </Button>
+      </ToolTipButton>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-0.5">
-            <Moon className="size-5 stroke-2" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="center" title="Toggle Dark Mode">
-          <p>Toggle Dark Mode</p>
-        </TooltipContent>
-      </Tooltip>
+      <ToolTipButton content="Toggle Dark Mode">
+        <Button variant="ghost" size="icon" className="p-0.5">
+          <Moon className="size-4" />
+        </Button>
+      </ToolTipButton>
     </div>
   )
 }
