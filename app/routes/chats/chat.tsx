@@ -6,6 +6,7 @@ import { redirect } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
 import { ChatInputBox } from "~/components/chat/chat-box"
 import { ChatMessage } from "~/components/chat/chat-message.client"
+import { ClientOnly } from "~/components/client-only"
 import { SiteHeader } from "~/components/site-header"
 import { Button, ToolTipButton } from "~/components/ui/button"
 import {
@@ -93,14 +94,16 @@ export default function Chat({
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col items-center justify-center gap-4 py-4 md:gap-6 md:py-6">
               <div className="flex w-full max-w-4xl flex-col items-center justify-center gap-4 px-4">
-                {messages.map((message) => (
+                <ClientOnly>
+                  {() => typeof ChatMessage === "function" ? messages.map((message) => (
                   <ChatMessage
                     key={crypto.randomUUID()}
                     content={message.content}
                     role={message.role}
                     model={"model"}
                   />
-                ))}
+                )) : null}
+                </ClientOnly>
               </div>
             </div>
           </div>
