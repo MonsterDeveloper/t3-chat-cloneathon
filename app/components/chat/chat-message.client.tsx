@@ -45,9 +45,9 @@ export function ChatMessage({ content, role, model }: MessageProps) {
       >
         <div
           className={cn(
-            "relative flex w-fit flex-col gap-4 break-words rounded-lg text-sm",
+            "relative flex w-full flex-col gap-4 break-words rounded-lg text-sm",
             {
-              "bg-muted px-3 py-2": isUser,
+              "w-fit bg-muted px-3 py-2": isUser,
             },
           )}
         >
@@ -64,7 +64,7 @@ export function ChatMessage({ content, role, model }: MessageProps) {
                     <div className="flex h-10 items-center justify-between rounded-t-lg border-b bg-secondary/80 px-3 py-2 text-primary text-xs">
                       <span className="font-medium">{language}</span>
                       <Button
-                      variant="ghost"
+                        variant="ghost"
                         onClick={() =>
                           navigator.clipboard.writeText(String(children))
                         }
