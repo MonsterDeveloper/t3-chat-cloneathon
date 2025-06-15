@@ -53,7 +53,9 @@ export async function action({ request, context }: Route.ActionArgs) {
             id,
             content: JSON.stringify(message),
             chatId,
-            createdAt: createdAt ? new Date(createdAt) : new Date(),
+            createdAt: createdAt
+              ? new Date(createdAt).toISOString()
+              : new Date().toISOString(),
           })),
         )
         .onConflictDoUpdate({
@@ -69,6 +71,15 @@ export async function action({ request, context }: Route.ActionArgs) {
               context.openrouter,
               fullMessages[0].content,
             ),
+          })
+          .where(eq(chatsTable.id, chatId))
+      }
+
+      if (fullMessages.length <= 2) {
+        await context.db
+          .update(chatsTable)
+          .set({
+            createdAt: new Date().toISOString(),
           })
           .where(eq(chatsTable.id, chatId))
       }

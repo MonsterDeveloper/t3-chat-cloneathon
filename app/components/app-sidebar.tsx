@@ -1,21 +1,39 @@
+import { IconHelp, IconSearch, IconSettings } from "@tabler/icons-react"
 import {
-  IconDashboard,
-  IconHelp,
-  IconSearch,
-  IconSettings,
-} from "@tabler/icons-react"
-import type * as React from "react"
-import { Link } from "react-router"
+  isToday,
+  isWithinInterval,
+  isYesterday,
+  startOfDay,
+  subDays,
+} from "date-fns"
+import type { InferSelectModel } from "drizzle-orm"
+import { matchSorter } from "match-sorter"
+import { type ComponentProps, useMemo, useState } from "react"
+import { Link, useLocation } from "react-router"
 import { NavMain } from "~/components/nav-main"
 import { NavSecondary } from "~/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import type { chatsTable } from "~/database/schema"
+import { Input } from "./ui/input"
+
+interface Chat
+  extends Pick<
+    InferSelectModel<typeof chatsTable>,
+    "id" | "title" | "createdAt" | "isPinned"
+  > {
+  messageCount: number
+}
 
 const data = {
   user: {
@@ -23,18 +41,6 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  navMain: [
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
-    },
-  ],
   navSecondary: [
     {
       title: "Settings",
@@ -49,7 +55,100 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface Props extends ComponentProps<typeof Sidebar> {
+  chats: Chat[]
+}
+
+function groupChatsByDate(chats: Chat[]) {
+  const now = new Date()
+  const sevenDaysAgo = startOfDay(subDays(now, 7))
+  const thirtyDaysAgo = startOfDay(subDays(now, 30))
+
+  const groups = {
+    today: [] as Chat[],
+    yesterday: [] as Chat[],
+    lastWeek: [] as Chat[],
+    lastMonth: [] as Chat[],
+    older: [] as Chat[],
+  }
+
+  for (const chat of chats) {
+    const chatDate = new Date(chat.createdAt)
+
+    if (isToday(chatDate)) {
+      groups.today.push(chat)
+    } else if (isYesterday(chatDate)) {
+      groups.yesterday.push(chat)
+    } else if (
+      isWithinInterval(chatDate, {
+        start: sevenDaysAgo,
+        end: startOfDay(subDays(now, 2)),
+      })
+    ) {
+      groups.lastWeek.push(chat)
+    } else if (
+      isWithinInterval(chatDate, { start: thirtyDaysAgo, end: sevenDaysAgo })
+    ) {
+      groups.lastMonth.push(chat)
+    } else {
+      groups.older.push(chat)
+    }
+  }
+
+  return groups
+}
+
+interface ChatGroupProps {
+  title: string
+  chats: Chat[]
+}
+
+function ChatGroup({ title, chats }: ChatGroupProps) {
+  const location = useLocation()
+
+  if (chats.length === 0) {
+    return null
+  }
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="font-medium text-muted-foreground text-xs">
+        {title}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {chats.map((chat) => (
+            <SidebarMenuItem key={chat.id}>
+              <SidebarMenuButton
+                tooltip={chat.title ? chat.title : undefined}
+                className="flex items-center gap-2"
+                isActive={location.pathname.includes(chat.id)}
+                asChild
+              >
+                <Link to={`/chats/${chat.id}`} prefetch="intent">
+                  <span>{chat.title ?? "Untitled"}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}
+
+export function AppSidebar({ chats, ...props }: Props) {
+  const [searchQuery, setSearchQuery] = useState("")
+  const groupedChats = useMemo(() => {
+    const filteredChats = matchSorter(
+      chats.filter((chat) => chat.messageCount > 0),
+      searchQuery,
+      { keys: ["title"] },
+    )
+
+    return groupChatsByDate(filteredChats)
+  }, [searchQuery, chats])
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -136,7 +235,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain>
+          <SidebarMenuItem className="flex items-center gap-2 border-b px-2 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+            <IconSearch className="size-4" />
+            <Input
+              type="text"
+              placeholder="Search your threads"
+              className="w-full border-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:ring-transparent"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </SidebarMenuItem>
+        </NavMain>
+
+        <ChatGroup title="Today" chats={groupedChats.today} />
+        <ChatGroup title="Yesterday" chats={groupedChats.yesterday} />
+        <ChatGroup title="Last 7 days" chats={groupedChats.lastWeek} />
+        <ChatGroup title="Last 30 days" chats={groupedChats.lastMonth} />
+        <ChatGroup title="Older" chats={groupedChats.older} />
+
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>

@@ -11,12 +11,9 @@ export const chatsTable = sqliteTable("chats", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   title: text(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$onUpdateFn(
-    () => new Date(),
-  ),
+  createdAt: text("created_at").notNull().default(sql`(current_timestamp)`),
+  updatedAt: text("updated_at").$onUpdateFn(() => sql`(current_timestamp)`),
+  isPinned: integer("is_pinned", { mode: "boolean" }).default(false).notNull(),
 })
 
 export const chatsRelations = relations(chatsTable, ({ many }) => ({
@@ -29,10 +26,8 @@ export const messagesTable = sqliteTable("messages", {
     .notNull()
     .references(() => chatsTable.id, { onDelete: "cascade" }),
   content: text().notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$onUpdateFn(
-    () => new Date(),
-  ),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").$onUpdateFn(() => sql`(current_timestamp)`),
 })
 
 export const messagesRelations = relations(messagesTable, ({ one }) => ({

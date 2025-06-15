@@ -13,7 +13,7 @@ export async function generateChatTitle(
       prompt: firstMessageText,
     })
 
-    return text
+    return text.trim()
   } catch (error) {
     console.error(error)
 
