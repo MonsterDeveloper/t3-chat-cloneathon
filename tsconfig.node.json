@@ -1,6 +1,13 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["vite.config.ts"],
+  "include": [
+    "vite.config.ts",
+    "load-context.ts",
+    "database/schema.ts",
+    "database/auth-schema.ts",
+    "app/lib/compose-id.ts",
+    "worker-configuration.d.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "strict": true,
