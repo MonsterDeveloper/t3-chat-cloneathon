@@ -16,6 +16,17 @@ import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { Switch } from "~/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
+import type { Route } from "./+types/settings"
+
+export const meta: Route.MetaFunction = () => [
+  {
+    title: "Settings | not T3 chat",
+  },
+  {
+    name: "description",
+    content: "Manage your account and preferences",
+  },
+]
 
 export default function SettingsPage() {
   const [searchParams] = useSearchParams()
