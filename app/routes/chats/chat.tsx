@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react"
 import { and, eq, sql } from "drizzle-orm"
 import { Moon, Plus, Search, Settings2 } from "lucide-react"
-import type * as React from "react"
+import * as React from "react"
 import { redirect } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
 import { ChatInputBox } from "~/components/chat/chat-box"
@@ -84,12 +84,23 @@ export async function loader({
 export default function Chat({
   loaderData: { chatId, initialMessages, chats },
 }: Route.ComponentProps) {
-  const { messages, input, handleInputChange, handleSubmit, status, stop } =
-    useChat({
-      id: chatId,
-      initialMessages,
-      sendExtraMessageFields: true,
-    })
+  const {
+    messages,
+    input,
+    status,
+    error,
+    handleInputChange,
+    handleSubmit,
+    stop,
+  } = useChat({
+    id: chatId,
+    initialMessages,
+    sendExtraMessageFields: true,
+  })
+  const messagesEndRef = React.useRef<HTMLDivElement>(null)
+
+
+  console.log(error)
 
   return (
     <SidebarProvider
@@ -118,7 +129,13 @@ export default function Chat({
                     model={"model"}
                   />
                 ))}
+                {error && (
+                  <div className="w-full rounded-md bg-destructive/10 p-2 text-red-500 text-sm">
+                    {error.message}
+                  </div>
+                )}
               </div>
+              <div className="mb-5" ref={messagesEndRef} />
             </div>
           </div>
         </div>
@@ -126,6 +143,11 @@ export default function Chat({
           <ChatInputBox
             value={input}
             onChange={handleInputChange}
+            // onSubmit={(event, options) => {
+            //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+            //   handleSubmit(event, options)
+            // }}
+
             onSubmit={handleSubmit}
             status={status}
             stop={stop}
