@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react"
+import { Link, useSearchParams } from "react-router"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +18,9 @@ import { Switch } from "~/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 
 export default function SettingsPage() {
+  const [searchParams] = useSearchParams()
+  const rt = searchParams.get("rt")
+
   return (
     <div className="h-screen w-full overflow-y-auto">
       <div className="-z-50 fixed inset-0 dark:bg-sidebar">
@@ -31,9 +35,15 @@ export default function SettingsPage() {
       </div>
       <main className="mx-auto flex max-w-[1200px] flex-col overflow-y-auto px-4 pt-6 pb-24 md:px-6 lg:px-8">
         <header className="flex flex-row items-center justify-between pb-8">
-          <Button variant="ghost">
-            <ArrowLeft className="mr-2 size-4" />
-            Back to chat
+          <Button variant="ghost" asChild>
+            <Link
+              to={{
+                pathname: rt ? `/chats/${rt}` : "/chats",
+              }}
+            >
+              <ArrowLeft className="mr-2 size-4" />
+              Back to chat
+            </Link>
           </Button>
           <div className="flex flex-row items-center gap-2">
             <Button variant="ghost">Sign out</Button>

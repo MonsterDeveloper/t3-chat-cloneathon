@@ -1,4 +1,4 @@
-import { IconHelp, IconSearch, IconSettings } from "@tabler/icons-react"
+import { IconSearch, IconSettings } from "@tabler/icons-react"
 import {
   isToday,
   isWithinInterval,
@@ -33,26 +33,6 @@ interface Chat
     "id" | "title" | "createdAt" | "isPinned"
   > {
   messageCount: number
-}
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-  ],
 }
 
 interface Props extends ComponentProps<typeof Sidebar> {
@@ -138,6 +118,7 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
 }
 
 export function AppSidebar({ chats, ...props }: Props) {
+  const location = useLocation()
   const [searchQuery, setSearchQuery] = useState("")
   const groupedChats = useMemo(() => {
     const filteredChats = matchSorter(
@@ -254,7 +235,26 @@ export function AppSidebar({ chats, ...props }: Props) {
         <ChatGroup title="Last 30 days" chats={groupedChats.lastMonth} />
         <ChatGroup title="Older" chats={groupedChats.older} />
 
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary className="mt-auto">
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link
+                to={{
+                  pathname: "/settings",
+                  search: location.pathname.startsWith("/chats/")
+                    ? new URLSearchParams({
+                        rt: location.pathname.split("/").at(-1)!,
+                      }).toString()
+                    : undefined,
+                }}
+                prefetch="intent"
+              >
+                <IconSettings />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </NavSecondary>
       </SidebarContent>
     </Sidebar>
   )
