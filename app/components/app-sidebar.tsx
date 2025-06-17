@@ -1,4 +1,4 @@
-import { IconSearch, IconSettings } from "@tabler/icons-react"
+import { IconSearch } from "@tabler/icons-react"
 import {
   isToday,
   isWithinInterval,
@@ -25,6 +25,9 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar"
 import type { chatsTable } from "~/database/schema"
+import { useViewer } from "~/lib/auth-client"
+import { cn } from "~/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Input } from "./ui/input"
 
 interface Chat
@@ -119,6 +122,7 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
 
 export function AppSidebar({ chats, ...props }: Props) {
   const location = useLocation()
+  const viewer = useViewer()
   const [searchQuery, setSearchQuery] = useState("")
   const groupedChats = useMemo(() => {
     const filteredChats = matchSorter(
@@ -237,7 +241,7 @@ export function AppSidebar({ chats, ...props }: Props) {
 
         <NavSecondary className="mt-auto">
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton asChild className="h-auto p-3">
               <Link
                 to={{
                   pathname: "/settings",
@@ -248,9 +252,32 @@ export function AppSidebar({ chats, ...props }: Props) {
                     : undefined,
                 }}
                 prefetch="intent"
+                aria-label="Go to settings"
               >
-                <IconSettings />
-                <span>Settings</span>
+                <div className="flex w-full min-w-0 flex-row items-center gap-3">
+                  <Avatar
+                    className={cn(
+                      "size-8",
+                      viewer.isHidePersonalInfoEnabled && "blur-sm",
+                    )}
+                  >
+                    <AvatarImage src={viewer.image ?? undefined} />
+                    <AvatarFallback className="bg-muted text-xs">
+                      {viewer.name?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex min-w-0 flex-col text-foreground">
+                    <span
+                      className={cn(
+                        "truncate font-medium text-sm",
+                        viewer.isHidePersonalInfoEnabled && "blur-sm",
+                      )}
+                    >
+                      Andrei
+                    </span>
+                    <span className="text-xs">Free plan</span>
+                  </div>
+                </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

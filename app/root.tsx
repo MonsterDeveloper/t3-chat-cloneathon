@@ -38,6 +38,14 @@ export const links: Route.LinksFunction = () => [
   },
 ]
 
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const session = await context.auth.api.getSession({
+    headers: request.headers,
+  })
+
+  return { viewer: session?.user }
+}
+
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">

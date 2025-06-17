@@ -1,5 +1,13 @@
+import { eq } from "drizzle-orm"
 import { ArrowLeft } from "lucide-react"
-import { Link, useSearchParams } from "react-router"
+import {
+  type FetcherWithComponents,
+  Link,
+  redirect,
+  useFetcher,
+  useNavigate,
+  useSearchParams,
+} from "react-router"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +24,9 @@ import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { Switch } from "~/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
+import { user } from "~/database/auth-schema"
+import { signOut, useViewer } from "~/lib/auth-client"
+import { cn } from "~/lib/utils"
 import type { Route } from "./+types/settings"
 
 export const meta: Route.MetaFunction = () => [
@@ -28,9 +39,30 @@ export const meta: Route.MetaFunction = () => [
   },
 ]
 
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const session = await context.auth.api.getSession({
+    headers: request.headers,
+  })
+
+  if (!session) {
+    return redirect("/sign-in")
+  }
+
+  return null
+}
+
 export default function SettingsPage() {
   const [searchParams] = useSearchParams()
   const rt = searchParams.get("rt")
+  const viewer = useViewer()
+  const navigate = useNavigate()
+  const hidePersonalInfoFetcher = useFetcher()
+  const isHidePersonalInfoEnabled = hidePersonalInfoFetcher.formData?.has(
+    "isHidePersonalInfoEnabled",
+  )
+    ? hidePersonalInfoFetcher.formData.get("isHidePersonalInfoEnabled") ===
+      "true"
+    : viewer.isHidePersonalInfoEnabled
 
   return (
     <div className="h-screen w-full overflow-y-auto">
@@ -57,20 +89,50 @@ export default function SettingsPage() {
             </Link>
           </Button>
           <div className="flex flex-row items-center gap-2">
-            <Button variant="ghost">Sign out</Button>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                signOut({
+                  fetchOptions: {
+                    onSuccess: () => {
+                      navigate("/sign-in")
+                    },
+                  },
+                })
+              }
+            >
+              Sign out
+            </Button>
           </div>
         </header>
         <div className="flex flex-grow flex-col gap-4 md:flex-row">
           <div className="hidden flex-col items-center justify-center md:flex md:w-1/4">
-            <Avatar className="mx-auto size-40">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
+            <Avatar
+              className={cn(
+                "mx-auto size-40",
+                isHidePersonalInfoEnabled && "blur-sm",
+              )}
+            >
+              <AvatarImage src={viewer.image ?? undefined} />
+              <AvatarFallback>
+                {viewer.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
-            <h1 className="mt-4 text-center font-bold text-2xl transition-opacity duration-200">
-              Shadcn
+            <h1
+              className={cn(
+                "mt-4 text-center font-bold text-2xl transition-opacity duration-200",
+                isHidePersonalInfoEnabled && "blur-sm",
+              )}
+            >
+              {viewer.name}
             </h1>
-            <p className="text-center text-muted-foreground">
-              andrei@example.com
+            <p
+              className={cn(
+                "text-center text-muted-foreground",
+                isHidePersonalInfoEnabled && "blur-sm",
+              )}
+            >
+              {viewer.email}
             </p>
             <div className="mt-2 inline-flex items-center rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground text-xs">
               Free plan
@@ -167,15 +229,10 @@ export default function SettingsPage() {
               </TabsContent>
               <TabsContent value="customization" className="space-y-6">
                 <h2 className="font-bold text-2xl">Visual Options</h2>
-                <div className="flex items-center justify-between gap-x-1">
-                  <div className="space-y-2">
-                    <Label>Hide Personal Information</Label>
-                    <p className="text-muted-foreground text-sm">
-                      Hides your name and email from the UI.
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
+                <HidePersonalInfo
+                  fetcher={hidePersonalInfoFetcher}
+                  isChecked={isHidePersonalInfoEnabled}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -183,4 +240,61 @@ export default function SettingsPage() {
       </main>
     </div>
   )
+}
+
+function HidePersonalInfo({
+  fetcher,
+  isChecked,
+}: { fetcher: FetcherWithComponents<unknown>; isChecked: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-x-1">
+      <div className="space-y-2">
+        <Label>Hide Personal Information</Label>
+        <p className="text-muted-foreground text-sm">
+          Hides your name and email from the UI.
+        </p>
+      </div>
+      <Switch
+        checked={isChecked}
+        onCheckedChange={(checked) => {
+          fetcher.submit(
+            {
+              isHidePersonalInfoEnabled: checked.toString(),
+              intent: "hidePersonalInfo",
+            },
+            { method: "post" },
+          )
+        }}
+      />
+    </div>
+  )
+}
+
+export async function action({ request, context }: Route.ActionArgs) {
+  const session = await context.auth.api.getSession({
+    headers: request.headers,
+  })
+
+  if (!session) {
+    return redirect("/sign-in")
+  }
+
+  const formData = await request.formData()
+  const intent = formData.get("intent")
+
+  if (intent === "hidePersonalInfo") {
+    await context.db
+      .update(user)
+      .set({
+        isHidePersonalInfoEnabled:
+          formData.get("isHidePersonalInfoEnabled") === "true",
+      })
+      .where(eq(user.id, session.user.id))
+
+    return {
+      ok: true,
+    }
+  }
+
+  throw new Response("Invalid intent", { status: 400 })
 }
