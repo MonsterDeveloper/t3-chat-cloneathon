@@ -13,6 +13,36 @@ declare global {
   interface CloudflareEnvironment extends Env {}
 }
 
+function createBetterAuth(env: Env, db: DrizzleD1Database<typeof schema>) {
+  return betterAuth({
+    secret: env.BETTER_AUTH_SECRET,
+    baseURL: env.BETTER_AUTH_URL,
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+    }),
+    emailAndPassword: {
+      enabled: false,
+    },
+    socialProviders: {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      },
+    },
+    user: {
+      additionalFields: {
+        isHidePersonalInfoEnabled: {
+          type: "boolean",
+          required: true,
+          defaultValue: false,
+          input: false,
+        },
+      },
+    },
+    plugins: [anonymous()],
+  })
+}
+
 declare module "react-router" {
   export interface AppLoadContext {
     cloudflare: {
@@ -21,7 +51,7 @@ declare module "react-router" {
     }
     db: DrizzleD1Database<typeof schema>
     openrouter: OpenRouterProvider
-    auth: ReturnType<typeof betterAuth>
+    auth: ReturnType<typeof createBetterAuth>
   }
 }
 
@@ -38,23 +68,7 @@ export function getLoadContext({
 
   const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY })
 
-  const auth = betterAuth({
-    secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
-    database: drizzleAdapter(db, {
-      provider: "sqlite",
-    }),
-    emailAndPassword: {
-      enabled: false,
-    },
-    socialProviders: {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-      },
-    },
-    plugins: [anonymous()],
-  })
+  const auth = createBetterAuth(env, db)
 
   return {
     cloudflare: { env, ctx: context.cloudflare.ctx },

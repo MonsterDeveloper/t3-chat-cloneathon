@@ -1,4 +1,5 @@
 import {
+  Link,
   Links,
   Meta,
   Outlet,
@@ -10,6 +11,7 @@ import {
 import type { Route } from "./+types/root"
 import "./app.css"
 import type { ReactNode } from "react"
+import { Button } from "./components/ui/button"
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -35,6 +37,14 @@ export const links: Route.LinksFunction = () => [
     sizes: "1024x1024",
   },
 ]
+
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const session = await context.auth.api.getSession({
+    headers: request.headers,
+  })
+
+  return { viewer: session?.user }
+}
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -75,14 +85,17 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="container mx-auto p-4 pt-16">
-      <h1>{message}</h1>
-      <p>{details}</p>
+    <main className="container mx-auto p-4 pt-16 text-center">
+      <h1 className="font-bold text-4xl text-primary">{message}</h1>
+      <p className="mt-2 text-lg text-muted-foreground">{details}</p>
       {stack && (
         <pre className="w-full overflow-x-auto p-4">
           <code>{stack}</code>
         </pre>
       )}
+      <Button className="mt-4" asChild>
+        <Link to="/">Back to home</Link>
+      </Button>
     </main>
   )
 }
