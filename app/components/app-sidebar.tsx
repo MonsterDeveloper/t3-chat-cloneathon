@@ -1,4 +1,3 @@
-import { IconHelp, IconSearch, IconSettings } from "@tabler/icons-react"
 import {
   isToday,
   isWithinInterval,
@@ -7,9 +6,18 @@ import {
   subDays,
 } from "date-fns"
 import type { InferSelectModel } from "drizzle-orm"
+import { HelpCircle, Pin, Search, Settings, X } from "lucide-react"
 import { matchSorter } from "match-sorter"
-import { type ComponentProps, useMemo, useState } from "react"
-import { Link, useLocation } from "react-router"
+import {
+  type ComponentProps,
+  startTransition,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+} from "react"
+import { Link, useFetcher, useLocation } from "react-router"
 import { NavMain } from "~/components/nav-main"
 import { NavSecondary } from "~/components/nav-secondary"
 import {
@@ -25,6 +33,8 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar"
 import type { chatsTable } from "~/database/schema"
+import { Button } from "./ui/button"
+import { ToolTipButton } from "./ui/button"
 import { Input } from "./ui/input"
 
 interface Chat
@@ -45,12 +55,12 @@ const data = {
     {
       title: "Settings",
       url: "#",
-      icon: IconSettings,
+      icon: Settings,
     },
     {
       title: "Get Help",
       url: "#",
-      icon: IconHelp,
+      icon: HelpCircle,
     },
   ],
 }
@@ -65,6 +75,7 @@ function groupChatsByDate(chats: Chat[]) {
   const thirtyDaysAgo = startOfDay(subDays(now, 30))
 
   const groups = {
+    pinned: [] as Chat[],
     today: [] as Chat[],
     yesterday: [] as Chat[],
     lastWeek: [] as Chat[],
@@ -75,7 +86,9 @@ function groupChatsByDate(chats: Chat[]) {
   for (const chat of chats) {
     const chatDate = new Date(chat.createdAt)
 
-    if (isToday(chatDate)) {
+    if (chat.isPinned) {
+      groups.pinned.push(chat)
+    } else if (isToday(chatDate)) {
       groups.today.push(chat)
     } else if (isYesterday(chatDate)) {
       groups.yesterday.push(chat)
@@ -105,8 +118,120 @@ interface ChatGroupProps {
 
 function ChatGroup({ title, chats }: ChatGroupProps) {
   const location = useLocation()
+  const fetcher = useFetcher()
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  if (chats.length === 0) {
+  // Use useOptimistic with React Router's fetcher
+  const [optimisticChats, updateOptimisticChats] = useOptimistic(
+    chats,
+    (
+      state,
+      action: {
+        type: string
+        chatId: string
+        title?: string
+        isPinned?: boolean
+      },
+    ) => {
+      switch (action.type) {
+        case "rename":
+          return state.map((chat) =>
+            chat.id === action.chatId
+              ? { ...chat, title: action.title! }
+              : chat,
+          )
+        case "pin":
+          return state.map((chat) =>
+            chat.id === action.chatId
+              ? { ...chat, isPinned: action.isPinned! }
+              : chat,
+          )
+        case "delete":
+          return state.filter((chat) => chat.id !== action.chatId)
+        default:
+          return state
+      }
+    },
+  )
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingId])
+
+  // Handle edit mode
+  const startEditing = (chat: Chat) => {
+    setEditingId(chat.id)
+    setEditingTitle(chat.title || "")
+  }
+
+  const cancelEditing = () => {
+    setEditingId(null)
+    setEditingTitle("")
+  }
+
+  // Optimistic updates with React Router
+  const handleRename = (chatId: string, newTitle: string) => {
+    if (!newTitle.trim()) {
+      cancelEditing()
+      return
+    }
+
+    startTransition(() => {
+      updateOptimisticChats({ type: "rename", chatId, title: newTitle })
+    })
+
+    const formData = new FormData()
+    formData.append("intent", "rename")
+    formData.append("title", newTitle)
+
+    fetcher.submit(formData, {
+      method: "POST",
+      action: `/chats/${chatId}`,
+    })
+
+    cancelEditing()
+  }
+
+  const handlePin = (chatId: string, isPinned: boolean) => {
+    startTransition(() => {
+      updateOptimisticChats({ type: "pin", chatId, isPinned })
+    })
+
+    const formData = new FormData()
+    formData.append("intent", "pin")
+    formData.append("isPinned", String(isPinned))
+
+    fetcher.submit(formData, {
+      method: "POST",
+      action: `/chats/${chatId}`,
+    })
+  }
+
+  const handleDelete = (chatId: string) => {
+    if (!confirm("Are you sure you want to delete this chat?")) {
+      return
+    }
+
+    startTransition(() => {
+      updateOptimisticChats({ type: "delete", chatId })
+    })
+
+    const formData = new FormData()
+    formData.append("intent", "delete")
+
+    fetcher.submit(formData, {
+      method: "POST",
+      action: `/chats/${chatId}`,
+    })
+  }
+
+  if (optimisticChats.length === 0) {
     return null
   }
 
@@ -117,16 +242,86 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {chats.map((chat) => (
+          {optimisticChats.map((chat) => (
             <SidebarMenuItem key={chat.id}>
               <SidebarMenuButton
-                tooltip={chat.title ? chat.title : undefined}
-                className="flex items-center gap-2"
+                tooltip={chat.title || "Untitled"}
+                className="group/chat flex items-center gap-2"
                 isActive={location.pathname.includes(chat.id)}
                 asChild
               >
                 <Link to={`/chats/${chat.id}`} prefetch="intent">
-                  <span>{chat.title ?? "Untitled"}</span>
+                  {editingId === chat.id ? (
+                    <div className="w-full" onKeyDown={(e) => e.preventDefault()}>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          handleRename(chat.id, editingTitle)
+                        }}
+                        className="w-full"
+                      >
+                        <Input
+                          ref={inputRef}
+                          className="border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-transparent"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onBlur={() => handleRename(chat.id, editingTitle)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                              cancelEditing()
+                            }
+                          }}
+                        />
+                      </form>
+                    </div>
+                  ) : (
+                    <span
+                      onDoubleClick={(e) => {
+                        e.preventDefault()
+                        startEditing(chat)
+                      }}
+                      className="line-clamp-1 flex-1"
+                    >
+                      {chat.title || "Untitled"}
+                    </span>
+                  )}
+
+                  {editingId !== chat.id && (
+                    <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] transition-all duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
+                      <ToolTipButton
+                        content={chat.isPinned ? "Unpin" : "Pin"}
+                      > 
+                        <Button
+                        variant="ghost"
+                        className="size-7 p-0 hover:bg-accent"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handlePin(chat.id, !chat.isPinned)
+                        }}
+                        disabled={fetcher.state !== "idle"}
+                      >
+                        <Pin
+                          className={`size-4 ${chat.isPinned ? "fill-current" : ""}`}
+                        />
+                      </Button>
+                      </ToolTipButton>
+                      <ToolTipButton
+                        content="Delete Thread"
+                      > 
+                      <Button
+                        variant="ghost"
+                        className="size-7 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleDelete(chat.id)
+                        }}
+                        disabled={fetcher.state !== "idle"}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                      </ToolTipButton>
+                    </div>
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -234,10 +429,11 @@ export function AppSidebar({ chats, ...props }: Props) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain>
           <SidebarMenuItem className="flex items-center gap-2 border-b px-2 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
-            <IconSearch className="size-4" />
+            <Search className="size-4" />
             <Input
               type="text"
               placeholder="Search your threads"
@@ -247,6 +443,11 @@ export function AppSidebar({ chats, ...props }: Props) {
             />
           </SidebarMenuItem>
         </NavMain>
+
+        {/* Show pinned chats first if they exist */}
+        {groupedChats.pinned.length > 0 && (
+          <ChatGroup title="Pinned" chats={groupedChats.pinned} />
+        )}
 
         <ChatGroup title="Today" chats={groupedChats.today} />
         <ChatGroup title="Yesterday" chats={groupedChats.yesterday} />

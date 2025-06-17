@@ -104,13 +104,6 @@ export default function Chat({
 
   return (
     <SidebarProvider
-      style={
-        {
-          position: "relative",
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
     >
       <LeftFloatingControls />
       <RightFloatingControls />
@@ -143,11 +136,6 @@ export default function Chat({
           <ChatInputBox
             value={input}
             onChange={handleInputChange}
-            // onSubmit={(event, options) => {
-            //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-            //   handleSubmit(event, options)
-            // }}
-
             onSubmit={handleSubmit}
             status={status}
             stop={stop}

@@ -1,4 +1,4 @@
-import { IconCirclePlusFilled } from "@tabler/icons-react"
+import { PlusCircle } from "lucide-react"
 import type { ComponentProps } from "react"
 import { Link } from "react-router"
 import {
@@ -24,7 +24,7 @@ export function NavMain({
               asChild
             >
               <Link to="/chats" prefetch="intent">
-                <IconCirclePlusFilled />
+                <PlusCircle />
                 <span>New Chat</span>
               </Link>
             </SidebarMenuButton>

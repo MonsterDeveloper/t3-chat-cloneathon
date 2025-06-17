@@ -15,20 +15,20 @@ import { Label } from "../ui/label"
 // https://openrouter.ai/models
 const models = [
   {
+    label: "GPT-4o-mini",
+    value: "openai/gpt-4o-mini",
+    provider: "openai",
+     category: "favorites",
+    premium: false,
+    capabilities: ["vision", "web", "docs"],
+  },
+  {
     value: "google/gemini-2.5-flash",
     label: "Gemini 2.5 Flash",
     provider: "google",
     category: "favorites",
     premium: false,
     capabilities: ["vision", "web", "docs"],
-  },
-  {
-    value: "google/gemini-2.5-pro",
-    label: "Gemini 2.5 Pro",
-    provider: "google",
-    category: "favorites",
-    capabilities: ["vision", "web", "docs", "reasoning"],
-    premium: true,
   },
   {
     value: "openai/gpt-imagegen",
