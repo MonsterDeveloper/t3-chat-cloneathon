@@ -16,4 +16,5 @@ export default [
     index("routes/chats/index.ts"),
     route(":chatId", "routes/chats/chat.tsx"),
   ]),
+  route("settings", "routes/settings.tsx"),
 ] satisfies RouteConfig

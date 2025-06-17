@@ -2,7 +2,7 @@ import { useChat } from "@ai-sdk/react"
 import { and, eq, sql } from "drizzle-orm"
 import { Moon, Plus, Search, Settings2 } from "lucide-react"
 import * as React from "react"
-import { redirect } from "react-router"
+import { Link, redirect, useLocation } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
 import { ChatInputBox } from "~/components/chat/chat-box"
 import { ChatMessage } from "~/components/chat/chat-message"
@@ -171,6 +171,7 @@ const LeftFloatingControls = () => {
 }
 const RightFloatingControls = () => {
   const { isMobile } = useSidebar()
+  const location = useLocation()
   return (
     <div
       className={cn(
@@ -181,8 +182,20 @@ const RightFloatingControls = () => {
       )}
     >
       <ToolTipButton content="Settings">
-        <Button variant="ghost" size="icon" className="p-0.5">
-          <Settings2 className="size-4" />
+        <Button variant="ghost" size="icon" className="p-0.5" asChild>
+          <Link
+            to={{
+              pathname: "/settings",
+              search: location.pathname.startsWith("/chats/")
+                ? new URLSearchParams({
+                    rt: location.pathname.split("/").at(-1)!,
+                  }).toString()
+                : undefined,
+            }}
+            prefetch="intent"
+          >
+            <Settings2 className="size-4" />
+          </Link>
         </Button>
       </ToolTipButton>
 

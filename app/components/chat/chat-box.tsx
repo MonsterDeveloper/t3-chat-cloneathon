@@ -11,6 +11,7 @@ import {
 import { Button } from "~/components/ui/button"
 import { type Model, ModelPopover } from "../model-popover"
 import { Label } from "../ui/label"
+import { Textarea } from "../ui/textarea"
 
 // https://openrouter.ai/models
 const models = [
@@ -170,23 +171,13 @@ export const ChatInputBox = ({
             }}
           >
             <div className="flex w-full flex-grow flex-col">
-              <div className="flex flex-grow flex-row items-start">
-                <textarea
-                  name="input"
-                  id="chat-input"
-                  placeholder="Type your message here..."
-                  className="h-12 max-h-[200px] min-h-12 w-full resize-none overflow-y-auto bg-transparent text-base text-foreground leading-6 outline-none placeholder:text-secondary-foreground/60 disabled:opacity-0"
-                  aria-label="Message input"
-                  aria-describedby="chat-input-description"
-                  autoComplete="off"
-                  value={value}
-                  onKeyDown={handleKeyDown}
-                  onChange={onChange}
-                />
-                <div id="chat-input-description" className="sr-only">
-                  Press Enter to send, Shift + Enter for new line
-                </div>
-              </div>
+              <Textarea
+                value={value}
+                onChange={onChange}
+                onKeyDown={handleKeyDown}
+                className="max-h-44 border-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                placeholder="Type your message here..."
+              />
               <div className="-mb-px mt-2 flex w-full flex-wrap justify-between">
                 <div className="flex flex-col gap-2 pr-2 sm:flex-row sm:items-center">
                   <div className="flex items-center gap-1">

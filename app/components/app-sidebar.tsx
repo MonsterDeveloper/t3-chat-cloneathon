@@ -6,7 +6,7 @@ import {
   subDays,
 } from "date-fns"
 import type { InferSelectModel } from "drizzle-orm"
-import { HelpCircle, Pin, Search, Settings, X } from "lucide-react"
+import { Pin, Search, X } from "lucide-react"
 import { matchSorter } from "match-sorter"
 import {
   type ComponentProps,
@@ -33,6 +33,9 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar"
 import type { chatsTable } from "~/database/schema"
+import { useViewer } from "~/lib/auth-client"
+import { cn } from "~/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
 import { ToolTipButton } from "./ui/button"
 import { Input } from "./ui/input"
@@ -43,26 +46,6 @@ interface Chat
     "id" | "title" | "createdAt" | "isPinned"
   > {
   messageCount: number
-}
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircle,
-    },
-  ],
 }
 
 interface Props extends ComponentProps<typeof Sidebar> {
@@ -332,6 +315,8 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
 }
 
 export function AppSidebar({ chats, ...props }: Props) {
+  const location = useLocation()
+  const viewer = useViewer()
   const [searchQuery, setSearchQuery] = useState("")
   const groupedChats = useMemo(() => {
     const filteredChats = matchSorter(
@@ -454,7 +439,49 @@ export function AppSidebar({ chats, ...props }: Props) {
         <ChatGroup title="Last 30 days" chats={groupedChats.lastMonth} />
         <ChatGroup title="Older" chats={groupedChats.older} />
 
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary className="mt-auto">
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild className="h-auto p-3">
+              <Link
+                to={{
+                  pathname: "/settings",
+                  search: location.pathname.startsWith("/chats/")
+                    ? new URLSearchParams({
+                        rt: location.pathname.split("/").at(-1)!,
+                      }).toString()
+                    : undefined,
+                }}
+                prefetch="intent"
+                aria-label="Go to settings"
+              >
+                <div className="flex w-full min-w-0 flex-row items-center gap-3">
+                  <Avatar
+                    className={cn(
+                      "size-8",
+                      viewer.isHidePersonalInfoEnabled && "blur-sm",
+                    )}
+                  >
+                    <AvatarImage src={viewer.image ?? undefined} />
+                    <AvatarFallback className="bg-muted text-xs">
+                      {viewer.name?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex min-w-0 flex-col text-foreground">
+                    <span
+                      className={cn(
+                        "truncate font-medium text-sm",
+                        viewer.isHidePersonalInfoEnabled && "blur-sm",
+                      )}
+                    >
+                      {viewer.name}
+                    </span>
+                    <span className="text-xs">Free plan</span>
+                  </div>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </NavSecondary>
       </SidebarContent>
     </Sidebar>
   )

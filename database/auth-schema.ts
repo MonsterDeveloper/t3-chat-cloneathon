@@ -11,6 +11,11 @@ export const user = sqliteTable("user", {
     .default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  isHidePersonalInfoEnabled: integer("is_hide_personal_info_enabled", {
+    mode: "boolean",
+  })
+    .notNull()
+    .default(false),
 })
 
 export const session = sqliteTable("session", {
