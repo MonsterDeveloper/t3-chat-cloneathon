@@ -1,14 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "t3-chat-cloneathon",
+  "name": "not-t3-chat",
   "compatibility_date": "2025-06-10",
-  "main": "./workers/app.ts",
+  "main": "./build/server/index.js",
   "compatibility_flags": ["nodejs_compat_v2"],
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./build/client/"
+  },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "your-database-name",
-      "database_id": "your-database-id",
+      "database_name": "not-t3-chat",
+      "database_id": "cc3228ce-084d-4ab1-b864-a574ffb34332",
       "migrations_dir": "drizzle"
     }
   ]
