@@ -47,7 +47,7 @@ export function ChatMessage({ content, role, model }: MessageProps) {
           className={cn(
             "relative flex w-full flex-col gap-4 break-words rounded-lg text-sm",
             {
-              "w-fit bg-muted px-3 py-2": isUser,
+              "w-fit max-w-2xl bg-muted px-3 py-2": isUser,
             },
           )}
         >
