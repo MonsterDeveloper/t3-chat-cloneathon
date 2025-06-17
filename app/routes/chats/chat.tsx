@@ -1,4 +1,4 @@
-import { useChat } from "@ai-sdk/react"
+import { type Message, useChat } from "@ai-sdk/react"
 import { and, eq, sql } from "drizzle-orm"
 import { Moon, Plus, Search, Settings2 } from "lucide-react"
 import * as React from "react"
@@ -73,8 +73,8 @@ export async function loader({
     chats,
     initialMessages: chat.messages.map((message) => {
       return {
-        ...JSON.parse(message.content),
-        createdAt: message.createdAt,
+        ...(JSON.parse(message.content) as Message),
+        createdAt: new Date(message.createdAt),
         id: message.id,
       }
     }),
@@ -208,11 +208,7 @@ const RightFloatingControls = () => {
   )
 }
 
-export async function action({
-  context,
-  request,
-  params: { chatId },
-}: Route.ActionArgs) {
+export async function action({ context, request }: Route.ActionArgs) {
   const session = await context.auth.api.getSession({
     headers: request.headers,
   })
@@ -220,6 +216,9 @@ export async function action({
   if (!session) {
     return redirect("/sign-in")
   }
+
+  const formData = await request.formData()
+  const chatId = String(formData.get("chatId"))
 
   const chat = await context.db.query.chatsTable.findFirst({
     where: and(
@@ -235,7 +234,6 @@ export async function action({
     return redirect("/chats")
   }
 
-  const formData = await request.formData()
   const intent = String(formData.get("intent"))
 
   if (intent === "delete") {

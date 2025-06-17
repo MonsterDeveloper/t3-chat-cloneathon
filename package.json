@@ -69,6 +69,7 @@
     "@cto_of_everything/biome-config": "^1.1.5",
     "@react-router/dev": "^7.6.2",
     "@tailwindcss/vite": "^4.1.10",
+    "@total-typescript/ts-reset": "^0.6.1",
     "@types/node": "^20",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
