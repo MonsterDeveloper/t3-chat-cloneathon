@@ -199,9 +199,10 @@ const ModelListItem = ({
   onSelect: (model: Model) => void
 }) => {
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
       className="group flex items-center justify-between rounded-lg px-1 py-3 **:select-none hover:bg-accent/20"
-      onKeyDown={() => onSelect(model)}
+      onClick={() => onSelect(model)}
     >
       <div className="flex items-center space-x-3">
         <div className="font-bold text-purple-900">

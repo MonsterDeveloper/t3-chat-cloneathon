@@ -8,6 +8,7 @@ import {
 import type { InferSelectModel } from "drizzle-orm"
 import { Pin, Search, X } from "lucide-react"
 import { matchSorter } from "match-sorter"
+import type * as React from "react"
 import {
   type ComponentProps,
   startTransition,
@@ -39,6 +40,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
 import { ToolTipButton } from "./ui/button"
 import { Input } from "./ui/input"
+
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialog as Dialog,
+} from "~/components/ui/alert-dialog"
 
 interface Chat
   extends Pick<
@@ -197,10 +210,6 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
   }
 
   const handleDelete = (chatId: string) => {
-    if (!confirm("Are you sure you want to delete this chat?")) {
-      return
-    }
-
     startTransition(() => {
       updateOptimisticChats({ type: "delete", chatId })
     })
@@ -289,19 +298,22 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
                           />
                         </Button>
                       </ToolTipButton>
-                      <ToolTipButton content="Delete Thread">
-                        <Button
-                          variant="ghost"
-                          className="size-7 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            handleDelete(chat.id)
-                          }}
-                          disabled={fetcher.state !== "idle"}
-                        >
-                          <X className="size-4" />
-                        </Button>
-                      </ToolTipButton>
+                      <AlertDialog
+                        title="Delete thread"
+                        disabled={fetcher.state !== "idle"}
+                        description={`Are you sure you want to delete ${chat.title || "thread"}? This action cannot be undone.`}
+                        onCancel={() => null}
+                        onConfirm={(e) => {
+                          e.preventDefault()
+                          handleDelete(chat.id)
+                        }}
+                      >
+                        <ToolTipButton content="Delete Thread">
+                          <div className="rounded-md p-1.5 hover:bg-destructive hover:text-destructive-foreground">
+                            <X className="size-4" />
+                          </div>
+                        </ToolTipButton>
+                      </AlertDialog>
                     </div>
                   )}
                 </Link>
@@ -414,7 +426,7 @@ export function AppSidebar({ chats, ...props }: Props) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="overflow-x-hidden">
         <NavMain>
           <SidebarMenuItem className="flex items-center gap-2 border-b px-2 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
             <Search className="size-4" />
@@ -484,5 +496,48 @@ export function AppSidebar({ chats, ...props }: Props) {
         </NavSecondary>
       </SidebarContent>
     </Sidebar>
+  )
+}
+
+export function AlertDialog({
+  children,
+  title,
+  description,
+  onConfirm,
+  onCancel,
+  disabled = false,
+}: {
+  children: React.ReactNode
+  title: string
+  description: string
+  onConfirm: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onCancel: (e: React.MouseEvent<HTMLButtonElement>) => void
+  disabled?: boolean
+}) {
+  return (
+    <Dialog>
+      <AlertDialogTrigger
+        className="flex items-center justify-center"
+        disabled={disabled}
+      >
+        {children}
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-primary">
+            {description}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel} disabled={disabled}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} disabled={disabled}>
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </Dialog>
   )
 }

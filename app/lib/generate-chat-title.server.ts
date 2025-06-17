@@ -15,6 +15,7 @@ export async function generateChatTitle(
 
     return text.trim()
   } catch (error) {
+    // biome-ignore lint/suspicious/noConsole: <explanation>
     console.error(error)
 
     return null
