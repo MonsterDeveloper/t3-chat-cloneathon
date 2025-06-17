@@ -525,9 +525,7 @@ export function AlertDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription className="text-primary">
-            {description}
-          </AlertDialogDescription>
+          <AlertDialogDescription className="text-primary">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel} disabled={disabled}>
