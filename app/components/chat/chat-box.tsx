@@ -18,7 +18,7 @@ const models = [
     label: "GPT-4o-mini",
     value: "openai/gpt-4o-mini",
     provider: "openai",
-     category: "favorites",
+    category: "favorites",
     premium: false,
     capabilities: ["vision", "web", "docs"],
   },

@@ -241,4 +241,4 @@ export const ChatInputBox = ({
       </div>
     </div>
   )
-}   
+}

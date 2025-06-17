@@ -252,7 +252,10 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
               >
                 <Link to={`/chats/${chat.id}`} prefetch="intent">
                   {editingId === chat.id ? (
-                    <div className="w-full" onKeyDown={(e) => e.preventDefault()}>
+                    <div
+                      className="w-full"
+                      onKeyDown={(e) => e.preventDefault()}
+                    >
                       <form
                         onSubmit={(e) => {
                           e.preventDefault()
@@ -288,37 +291,33 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
 
                   {editingId !== chat.id && (
                     <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] transition-all duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
-                      <ToolTipButton
-                        content={chat.isPinned ? "Unpin" : "Pin"}
-                      > 
+                      <ToolTipButton content={chat.isPinned ? "Unpin" : "Pin"}>
                         <Button
-                        variant="ghost"
-                        className="size-7 p-0 hover:bg-accent"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handlePin(chat.id, !chat.isPinned)
-                        }}
-                        disabled={fetcher.state !== "idle"}
-                      >
-                        <Pin
-                          className={`size-4 ${chat.isPinned ? "fill-current" : ""}`}
-                        />
-                      </Button>
+                          variant="ghost"
+                          className="size-7 p-0 hover:bg-accent"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handlePin(chat.id, !chat.isPinned)
+                          }}
+                          disabled={fetcher.state !== "idle"}
+                        >
+                          <Pin
+                            className={`size-4 ${chat.isPinned ? "fill-current" : ""}`}
+                          />
+                        </Button>
                       </ToolTipButton>
-                      <ToolTipButton
-                        content="Delete Thread"
-                      > 
-                      <Button
-                        variant="ghost"
-                        className="size-7 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handleDelete(chat.id)
-                        }}
-                        disabled={fetcher.state !== "idle"}
-                      >
-                        <X className="size-4" />
-                      </Button>
+                      <ToolTipButton content="Delete Thread">
+                        <Button
+                          variant="ghost"
+                          className="size-7 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleDelete(chat.id)
+                          }}
+                          disabled={fetcher.state !== "idle"}
+                        >
+                          <X className="size-4" />
+                        </Button>
                       </ToolTipButton>
                     </div>
                   )}

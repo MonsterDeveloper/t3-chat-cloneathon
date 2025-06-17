@@ -99,12 +99,8 @@ export default function Chat({
   })
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
-
-  console.log(error)
-
   return (
-    <SidebarProvider
-    >
+    <SidebarProvider>
       <LeftFloatingControls />
       <RightFloatingControls />
       <AppSidebar variant="inset" chats={chats} />
