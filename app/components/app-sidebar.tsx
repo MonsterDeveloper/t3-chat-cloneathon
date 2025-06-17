@@ -1,4 +1,3 @@
-import { IconSearch } from "@tabler/icons-react"
 import {
   isToday,
   isWithinInterval,
@@ -7,9 +6,17 @@ import {
   subDays,
 } from "date-fns"
 import type { InferSelectModel } from "drizzle-orm"
+import { Pin, Search, X } from "lucide-react"
 import { matchSorter } from "match-sorter"
-import { type ComponentProps, useMemo, useState } from "react"
-import { Link, useLocation } from "react-router"
+import { type ComponentProps, useRef, useState } from "react"
+import { flushSync } from "react-dom"
+import {
+  Link,
+  useFetcher,
+  useFetchers,
+  useLocation,
+  useSubmit,
+} from "react-router"
 import { NavMain } from "~/components/nav-main"
 import { NavSecondary } from "~/components/nav-secondary"
 import {
@@ -28,7 +35,21 @@ import type { chatsTable } from "~/database/schema"
 import { useViewer } from "~/lib/auth-client"
 import { cn } from "~/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { Button } from "./ui/button"
+import { ToolTipButton } from "./ui/button"
 import { Input } from "./ui/input"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog"
 
 interface Chat
   extends Pick<
@@ -48,6 +69,7 @@ function groupChatsByDate(chats: Chat[]) {
   const thirtyDaysAgo = startOfDay(subDays(now, 30))
 
   const groups = {
+    pinned: [] as Chat[],
     today: [] as Chat[],
     yesterday: [] as Chat[],
     lastWeek: [] as Chat[],
@@ -58,7 +80,9 @@ function groupChatsByDate(chats: Chat[]) {
   for (const chat of chats) {
     const chatDate = new Date(chat.createdAt)
 
-    if (isToday(chatDate)) {
+    if (chat.isPinned) {
+      groups.pinned.push(chat)
+    } else if (isToday(chatDate)) {
       groups.today.push(chat)
     } else if (isYesterday(chatDate)) {
       groups.yesterday.push(chat)
@@ -78,6 +102,12 @@ function groupChatsByDate(chats: Chat[]) {
     }
   }
 
+  for (const group of Object.keys(groups)) {
+    groups[group as keyof typeof groups].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+  }
+
   return groups
 }
 
@@ -87,8 +117,6 @@ interface ChatGroupProps {
 }
 
 function ChatGroup({ title, chats }: ChatGroupProps) {
-  const location = useLocation()
-
   if (chats.length === 0) {
     return null
   }
@@ -101,18 +129,7 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
       <SidebarGroupContent>
         <SidebarMenu>
           {chats.map((chat) => (
-            <SidebarMenuItem key={chat.id}>
-              <SidebarMenuButton
-                tooltip={chat.title ? chat.title : undefined}
-                className="flex items-center gap-2"
-                isActive={location.pathname.includes(chat.id)}
-                asChild
-              >
-                <Link to={`/chats/${chat.id}`} prefetch="intent">
-                  <span>{chat.title ?? "Untitled"}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <ChatItem key={chat.id} chat={chat} />
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
@@ -120,19 +137,231 @@ function ChatGroup({ title, chats }: ChatGroupProps) {
   )
 }
 
-export function AppSidebar({ chats, ...props }: Props) {
+function ChatItem({ chat }: { chat: Chat }) {
+  const location = useLocation()
+  const [isEditing, setIsEditing] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const linkRef = useRef<HTMLAnchorElement>(null)
+  const fetcher = useFetcher()
+
+  const value = fetcher.formData?.has("title")
+    ? String(fetcher.formData.get("title"))
+    : chat.title
+
+  return (
+    <SidebarMenuItem key={chat.id}>
+      <SidebarMenuButton
+        tooltip={chat.title || "Untitled"}
+        className="group/chat flex items-center gap-2 p-0"
+        isActive={location.pathname.includes(chat.id)}
+        asChild
+      >
+        <div>
+          {isEditing ? (
+            <fetcher.Form
+              method="post"
+              onSubmit={(e) => {
+                e.preventDefault()
+                fetcher.submit(e.currentTarget, {
+                  flushSync: true,
+                })
+                flushSync(() => {
+                  setIsEditing(false)
+                })
+                linkRef.current?.focus()
+              }}
+              className="w-full"
+            >
+              <input type="hidden" name="intent" value="rename" />
+              <input type="hidden" name="chatId" value={chat.id} />
+              <Input
+                className="border-0 p-2 shadow-none focus-visible:ring-0 focus-visible:ring-transparent"
+                ref={inputRef}
+                defaultValue={value ?? ""}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    flushSync(() => {
+                      setIsEditing(false)
+                    })
+                    linkRef.current?.focus()
+                  }
+                }}
+                name="title"
+                onBlur={(event) => {
+                  if (
+                    inputRef.current?.value !== value &&
+                    inputRef.current?.value.trim() !== ""
+                  ) {
+                    fetcher.submit(event.currentTarget)
+                  }
+                  setIsEditing(false)
+                }}
+              />
+            </fetcher.Form>
+          ) : (
+            <>
+              <Link
+                to={`/chats/${chat.id}`}
+                prefetch="intent"
+                className="w-full truncate p-2"
+                onDoubleClick={() => {
+                  flushSync(() => {
+                    setIsEditing(true)
+                  })
+                  inputRef.current?.select()
+                }}
+                ref={linkRef}
+              >
+                {value || "Untitled"}
+              </Link>
+              <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] transition-all duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
+                <ToolTipButton content={chat.isPinned ? "Unpin" : "Pin"}>
+                  <ChatPinButton chat={chat} />
+                </ToolTipButton>
+                <AlertDialog>
+                  <ToolTipButton content="Delete Thread" asChild>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        className="cursor-pointer rounded-md p-1.5 hover:bg-destructive hover:text-destructive-foreground"
+                        title="Delete Thread"
+                        type="button"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                  </ToolTipButton>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete thread</AlertDialogTitle>
+                      <AlertDialogDescription className="text-primary">
+                        Are you sure you want to delete {value || "thread"}?
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <DeleteButton chat={chat} />
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </>
+          )}
+        </div>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
+
+function ChatPinButton({ chat }: { chat: Chat }) {
+  const fetcher = useFetcher()
+
+  return (
+    <Button
+      variant="ghost"
+      className="size-7 p-0 hover:bg-accent"
+      onClick={() => {
+        fetcher.submit(
+          {
+            intent: "pin",
+            isPinned: String(!chat.isPinned),
+            chatId: chat.id,
+          },
+          {
+            method: "post",
+          },
+        )
+      }}
+    >
+      <Pin className={`size-4 ${chat.isPinned ? "fill-current" : ""}`} />
+    </Button>
+  )
+}
+
+function DeleteButton({ chat }: { chat: Chat }) {
+  const submit = useSubmit()
+  const location = useLocation()
+  const isCurrentChat = location.pathname.includes(chat.id)
+
+  return (
+    <AlertDialogAction
+      onClick={() => {
+        submit(
+          {
+            intent: "delete",
+            chatId: chat.id,
+          },
+          { method: "post", navigate: isCurrentChat },
+        )
+      }}
+    >
+      Continue
+    </AlertDialogAction>
+  )
+}
+
+type FetcherWithFormData = ReturnType<typeof useFetchers>[number] & {
+  formData: FormData
+}
+
+function usePendingPins() {
+  return useFetchers()
+    .filter((fetcher): fetcher is FetcherWithFormData => {
+      if (!fetcher.formData) {
+        return false
+      }
+
+      return fetcher.formData.has("isPinned")
+    })
+    .map((fetcher) => ({
+      chatId: String(fetcher.formData.get("chatId")),
+      isPinned: fetcher.formData.get("isPinned") === "true",
+    }))
+}
+
+function usePendingDeletes() {
+  return useFetchers()
+    .filter((fetcher): fetcher is FetcherWithFormData => {
+      if (!fetcher.formData) {
+        return false
+      }
+
+      return fetcher.formData.get("intent") === "delete"
+    })
+    .map((fetcher) => String(fetcher.formData.get("chatId")))
+}
+
+export function AppSidebar({ chats: initialChats, ...props }: Props) {
   const location = useLocation()
   const viewer = useViewer()
   const [searchQuery, setSearchQuery] = useState("")
-  const groupedChats = useMemo(() => {
-    const filteredChats = matchSorter(
-      chats.filter((chat) => chat.messageCount > 0),
-      searchQuery,
-      { keys: ["title"] },
-    )
+  const pendingPins = usePendingPins()
+  const pendingDeletes = usePendingDeletes()
 
-    return groupChatsByDate(filteredChats)
-  }, [searchQuery, chats])
+  const chats = initialChats
+    .map((chat) => {
+      const pendingDelete = pendingDeletes.includes(chat.id)
+
+      if (pendingDelete) {
+        return null
+      }
+
+      const pendingPin = pendingPins.find((pin) => pin.chatId === chat.id)
+
+      return {
+        ...chat,
+        isPinned: pendingPin?.isPinned ?? chat.isPinned,
+      }
+    })
+    .filter(Boolean)
+
+  const filteredChats = matchSorter(
+    chats.filter((chat) => chat.messageCount > 0),
+    searchQuery,
+    { keys: ["title"] },
+  )
+
+  const groupedChats = groupChatsByDate(filteredChats)
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -219,10 +448,11 @@ export function AppSidebar({ chats, ...props }: Props) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+
+      <SidebarContent className="overflow-x-hidden">
         <NavMain>
           <SidebarMenuItem className="flex items-center gap-2 border-b px-2 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
-            <IconSearch className="size-4" />
+            <Search className="size-4" />
             <Input
               type="text"
               placeholder="Search your threads"
@@ -232,6 +462,11 @@ export function AppSidebar({ chats, ...props }: Props) {
             />
           </SidebarMenuItem>
         </NavMain>
+
+        {/* Show pinned chats first if they exist */}
+        {groupedChats.pinned.length > 0 && (
+          <ChatGroup title="Pinned" chats={groupedChats.pinned} />
+        )}
 
         <ChatGroup title="Today" chats={groupedChats.today} />
         <ChatGroup title="Yesterday" chats={groupedChats.yesterday} />

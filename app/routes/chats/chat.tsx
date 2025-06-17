@@ -1,7 +1,7 @@
-import { useChat } from "@ai-sdk/react"
+import { type Message, useChat } from "@ai-sdk/react"
 import { and, eq, sql } from "drizzle-orm"
 import { Moon, Plus, Search, Settings2 } from "lucide-react"
-import type * as React from "react"
+import * as React from "react"
 import { Link, redirect, useLocation } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
 import { ChatInputBox } from "~/components/chat/chat-box"
@@ -73,8 +73,8 @@ export async function loader({
     chats,
     initialMessages: chat.messages.map((message) => {
       return {
-        ...JSON.parse(message.content),
-        createdAt: message.createdAt,
+        ...(JSON.parse(message.content) as Message),
+        createdAt: new Date(message.createdAt),
         id: message.id,
       }
     }),
@@ -84,23 +84,23 @@ export async function loader({
 export default function Chat({
   loaderData: { chatId, initialMessages, chats },
 }: Route.ComponentProps) {
-  const { messages, input, handleInputChange, handleSubmit, status, stop } =
-    useChat({
-      id: chatId,
-      initialMessages,
-      sendExtraMessageFields: true,
-    })
+  const {
+    messages,
+    input,
+    status,
+    error,
+    handleInputChange,
+    handleSubmit,
+    stop,
+  } = useChat({
+    id: chatId,
+    initialMessages,
+    sendExtraMessageFields: true,
+  })
+  const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
   return (
-    <SidebarProvider
-      style={
-        {
-          position: "relative",
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
+    <SidebarProvider>
       <LeftFloatingControls />
       <RightFloatingControls />
       <AppSidebar variant="inset" chats={chats} />
@@ -118,7 +118,13 @@ export default function Chat({
                     model={"model"}
                   />
                 ))}
+                {error && (
+                  <div className="w-full rounded-md bg-destructive/10 p-2 text-red-500 text-sm">
+                    {error.message}
+                  </div>
+                )}
               </div>
+              <div className="mb-5" ref={messagesEndRef} />
             </div>
           </div>
         </div>
@@ -202,11 +208,7 @@ const RightFloatingControls = () => {
   )
 }
 
-export async function action({
-  context,
-  request,
-  params: { chatId },
-}: Route.ActionArgs) {
+export async function action({ context, request }: Route.ActionArgs) {
   const session = await context.auth.api.getSession({
     headers: request.headers,
   })
@@ -214,6 +216,9 @@ export async function action({
   if (!session) {
     return redirect("/sign-in")
   }
+
+  const formData = await request.formData()
+  const chatId = String(formData.get("chatId"))
 
   const chat = await context.db.query.chatsTable.findFirst({
     where: and(
@@ -229,7 +234,6 @@ export async function action({
     return redirect("/chats")
   }
 
-  const formData = await request.formData()
   const intent = String(formData.get("intent"))
 
   if (intent === "delete") {
