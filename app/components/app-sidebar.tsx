@@ -273,7 +273,7 @@ export function AppSidebar({ chats, ...props }: Props) {
                         viewer.isHidePersonalInfoEnabled && "blur-sm",
                       )}
                     >
-                      Andrei
+                      {viewer.name}
                     </span>
                     <span className="text-xs">Free plan</span>
                   </div>
