@@ -8,17 +8,6 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
@@ -190,42 +179,6 @@ export default function SettingsPage() {
                 <p className="mt-6 text-muted-foreground/80 text-sm">
                   We don't have a pro plan yet 😭
                 </p>
-                <div className="mt-20">
-                  <div className="w-fit space-y-2 border-0 border-muted-foreground/10">
-                    <h2 className="font-bold text-2xl">Danger Zone</h2>
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <p className="px-px py-1.5 text-muted-foreground/80 text-sm">
-                          Permanently delete your account and all associated
-                          data.
-                        </p>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
-                              Delete Account
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Are you absolutely sure?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete your account and remove your
-                                data from our servers.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </TabsContent>
               <TabsContent value="customization" className="space-y-6">
                 <h2 className="font-bold text-2xl">Visual Options</h2>
