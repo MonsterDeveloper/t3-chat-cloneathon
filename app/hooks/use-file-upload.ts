@@ -84,6 +84,7 @@ export const useFileUpload = (
   const inputRef = useRef<HTMLInputElement>(null)
 
   const validateFile = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
     (file: File | FileMetadata): string | null => {
       if (file instanceof File) {
         if (file.size > maxSize) {
@@ -167,6 +168,7 @@ export const useFileUpload = (
   }, [onFilesChange])
 
   const addFiles = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
     (newFiles: FileList | File[]) => {
       if (!newFiles || newFiles.length === 0) {
         return
@@ -279,7 +281,11 @@ export const useFileUpload = (
     (id: string) => {
       setState((prev) => {
         const fileToRemove = prev.files.find((file) => file.id === id)
-        if (fileToRemove?.preview && fileToRemove.file instanceof File && fileToRemove.file.type.startsWith("image/")) {
+        if (
+          fileToRemove?.preview &&
+          fileToRemove.file instanceof File &&
+          fileToRemove.file.type.startsWith("image/")
+        ) {
           URL.revokeObjectURL(fileToRemove.preview)
         }
 

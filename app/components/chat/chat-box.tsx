@@ -138,7 +138,7 @@ export const ChatInputBox = ({
   stop: () => void
 }) => {
   const [model, setModel] = useState<Model>(models[0])
-  const attachmentsFetcher = useFetcherWithReset<typeof action>() 
+  const attachmentsFetcher = useFetcherWithReset<typeof action>()
   const [uploadedFiles, setUploadedFiles] = useState<
     Array<{
       id: string
@@ -174,8 +174,6 @@ export const ChatInputBox = ({
           action: "/api/attachments",
         })
       }
-
-
     },
   })
 
@@ -215,7 +213,7 @@ export const ChatInputBox = ({
 
     onSubmit(event, {
       data: { model: model.value },
-        experimental_attachments:uploadedFiles.map(({ url, contentType }) => ({
+      experimental_attachments: uploadedFiles.map(({ url, contentType }) => ({
         url,
         contentType,
       })),
