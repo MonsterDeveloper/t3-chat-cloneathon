@@ -16,7 +16,11 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "~/components/ui/sidebar"
-import { type Chat as TChat, chatsTable, messagesTable } from "~/database/schema"
+import {
+  type Chat as TChat,
+  chatsTable,
+  messagesTable,
+} from "~/database/schema"
 import { useViewer } from "~/lib/auth-client"
 import { cn } from "~/lib/utils"
 import type { Route } from "./+types/chat"
@@ -245,7 +249,7 @@ const RightFloatingControls = () => {
           <Sun
             className={cn(
               "absolute top-1.5 size-4 transition-all duration-300 ease-in-out",
-              theme === "light"
+              theme === "system" || theme === "light"
                 ? "rotate-0 scale-100 opacity-100"
                 : "rotate-90 scale-80 opacity-0",
             )}
