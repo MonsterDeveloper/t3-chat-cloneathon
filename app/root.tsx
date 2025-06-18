@@ -15,6 +15,7 @@ import type { ReactNode } from "react"
 import { ClientOnly } from "./components/client-only"
 import { ThemeProvider } from "./components/theme-provider"
 import { Button } from "./components/ui/button"
+import { Toaster } from "./components/ui/sonner"
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

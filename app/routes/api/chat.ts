@@ -1,5 +1,5 @@
 import { type Message, appendResponseMessages, streamText } from "ai"
-import { and, eq, sql } from "drizzle-orm"
+import { type InferInsertModel, and, eq, sql } from "drizzle-orm"
 import { redirect } from "react-router"
 import { chatsTable, messagesTable } from "~/database/schema"
 import { generateChatTitle } from "~/lib/generate-chat-title.server"
@@ -37,6 +37,36 @@ export async function action({ request, context }: Route.ActionArgs) {
     throw new Response("Not Found", { status: 404 })
   }
 
+  for (const message of messages) {
+    if (!message.experimental_attachments) {
+      continue
+    }
+
+    // retrieve the attachments from the bucket by their id
+    for (const attachment of message.experimental_attachments) {
+      const attachmentId = attachment.url // we store attachment id as the url
+      const file = await context.cloudflare.env.ATTACHMENTS.get(attachmentId)
+
+      if (!file || file.customMetadata?.userId !== session.user.id) {
+        throw new Response("Attachment Not found", { status: 500 })
+      }
+
+      const arrayBuffer = await file.arrayBuffer()
+
+      const base64Content = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          "",
+        ),
+      )
+
+      attachment.url = `data:${file.httpMetadata?.contentType};base64,${base64Content}`
+      attachment.contentType =
+        file.httpMetadata?.contentType ?? "application/octet-stream"
+      attachment.name = attachmentId
+    }
+  }
+
   const result = streamText({
     model: context.openrouter(model),
     messages,
@@ -49,14 +79,19 @@ export async function action({ request, context }: Route.ActionArgs) {
       await context.db
         .insert(messagesTable)
         .values(
-          fullMessages.map(({ id, createdAt, ...message }) => ({
-            id,
-            content: JSON.stringify(message),
-            chatId,
-            createdAt: createdAt
-              ? new Date(createdAt).toISOString()
-              : new Date().toISOString(),
-          })),
+          fullMessages.map<InferInsertModel<typeof messagesTable>>(
+            ({ id, createdAt, experimental_attachments, ...message }) => ({
+              id,
+              attachmentIds: JSON.stringify(
+                experimental_attachments?.map(({ name }) => name),
+              ),
+              content: JSON.stringify(message),
+              chatId,
+              createdAt: createdAt
+                ? new Date(createdAt).toISOString()
+                : new Date().toISOString(),
+            }),
+          ),
         )
         .onConflictDoUpdate({
           target: messagesTable.id,

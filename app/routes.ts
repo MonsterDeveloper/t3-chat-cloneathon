@@ -10,6 +10,8 @@ export default [
   ...prefix("api", [
     route("auth/*", "routes/api/auth.ts"),
     route("chat", "routes/api/chat.ts"),
+    route("attachments", "routes/api/attachments.ts"),
+    route("attachments/:id", "routes/api/get-attachment.ts"),
   ]),
   route("sign-in", "routes/sign-in.tsx"),
   ...prefix("chats", [

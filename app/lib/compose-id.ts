@@ -5,6 +5,7 @@ export const nanoid = customAlphabet(
 
 export const ID_PREFIXES = {
   chat: "ch",
+  attachment: "at",
 } as const
 
 /**
