@@ -33,7 +33,7 @@ export function ChatMessage({ content, role, model }: MessageProps) {
   return (
     <div
       className={cn(
-        "group relative flex w-full gap-4 p-2 **:text-md",
+        "group relative flex w-full gap-4 p-2 **:text-md *:dark:text-white",
         isUser ? "justify-end" : "justify-start",
       )}
     >

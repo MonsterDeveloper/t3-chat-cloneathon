@@ -80,7 +80,7 @@ const ModelIcon = ({
   view: "favorites-list" | "cards"
 }) => {
   return (
-    <div>
+    <div className="**:fill-sidebar-foreground">
       {provider === "openai" ? (
         <svg
           className={cn("size-8", {
@@ -209,7 +209,7 @@ const ModelListItem = ({
           <ModelIcon provider={model.provider} view={view} />
         </div>
         <div className="flex items-center space-x-2">
-          <span className="font-medium text-gray-900 text-sm">
+          <span className="font-medium text-sm">
             {model.label}
           </span>
           {model.premium && <Sparkles className="size-4 text-pink-500" />}
@@ -329,7 +329,7 @@ export function ModelPopover({
               )}
               {otherModels.length > 0 && (
                 <div>
-                  <h2 className="mb-4 text-gray-900 text-sm">Others</h2>
+                  <h2 className="mb-4 text-sm">Others</h2>
                   <div className="flex flex-wrap gap-4">
                     {otherModels.map((model) => (
                       <ModelCard
@@ -364,7 +364,7 @@ export function ModelPopover({
               </div>
             )}
         </div>
-        <div className="-bottom-4 absolute left-0 z-50 w-full rounded-b-md border bg-white p-1">
+        <div className="-bottom-4 absolute left-0 z-50 w-full rounded-b-md border bg-white p-1 dark:bg-sidebar">
           <Button
             variant="ghost"
             onClick={

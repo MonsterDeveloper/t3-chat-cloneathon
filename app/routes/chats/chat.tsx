@@ -1,8 +1,9 @@
 import { type Message, useChat } from "@ai-sdk/react"
 import { and, eq, sql } from "drizzle-orm"
-import { Moon, Plus, Search, Settings2 } from "lucide-react"
+import { Moon, Plus, Search, Settings2, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 import * as React from "react"
-import { Link, redirect, useLocation } from "react-router"
+import { Link, redirect, useLocation, useNavigate } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
 import { ChatInputBox } from "~/components/chat/chat-box"
 import { ChatMessage } from "~/components/chat/chat-message"
@@ -99,6 +100,18 @@ export default function Chat({
   })
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
+  const navigate = useNavigate()
+
+React.useEffect(() => {
+  const handleNewChatShortcut = (event: KeyboardEvent) => {
+    if (event.key === "o" && (event.metaKey || event.ctrlKey) && event.shiftKey) {
+      event.preventDefault()
+      navigate("/chats")
+    }
+  }
+  window.addEventListener("keydown", handleNewChatShortcut)
+})
+
   return (
     <SidebarProvider>
       <LeftFloatingControls />
@@ -162,8 +175,10 @@ const LeftFloatingControls = () => {
         </Button>
       </ToolTipButton>
       <ToolTipButton content="New chat">
-        <Button variant="ghost" size="icon" className="p-0.5">
-          <Plus className="size-5 stroke-2" />
+        <Button variant="ghost" size="icon" className="p-0.5" asChild>
+          <Link to="/chats" prefetch="intent">
+            <Plus className="size-5 stroke-2" />
+          </Link>
         </Button>
       </ToolTipButton>
     </div>
@@ -172,10 +187,12 @@ const LeftFloatingControls = () => {
 const RightFloatingControls = () => {
   const { isMobile } = useSidebar()
   const location = useLocation()
+  const { theme, setTheme } = useTheme()
+
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2",
+        "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2 ",
         {
           hidden: isMobile,
         },
@@ -200,8 +217,12 @@ const RightFloatingControls = () => {
       </ToolTipButton>
 
       <ToolTipButton content="Toggle Dark Mode">
-        <Button variant="ghost" size="icon" className="p-0.5">
-          <Moon className="size-4" />
+        <Button variant="ghost" size="icon" className="p-0.5 " onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+          {theme === "dark" ? (
+            <Sun className="size-4 " />
+          ) : (
+            <Moon className="size-4" />
+          )}
         </Button>
       </ToolTipButton>
     </div>
