@@ -214,7 +214,7 @@ function ChatItem({ chat }: { chat: Chat }) {
               >
                 {value || "Untitled"}
               </Link>
-              <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] transition-all duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
+              <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
                 <ToolTipButton content={chat.isPinned ? "Unpin" : "Pin"}>
                   <ChatPinButton chat={chat} />
                 </ToolTipButton>
@@ -373,7 +373,7 @@ export function AppSidebar({ chats: initialChats, ...props }: Props) {
               <h1 className="flex h-8 shrink-0 items-center justify-center text-lg text-muted-foreground transition-opacity delay-75 duration-75">
                 <Link
                   className="relative flex h-8 w-24 items-center justify-center font-semibold text-foreground text-sm"
-                  to="/chat"
+                  to="/chats"
                   data-discover="true"
                 >
                   <div className="h-3.5 select-none">
@@ -456,7 +456,7 @@ export function AppSidebar({ chats: initialChats, ...props }: Props) {
             <Input
               type="text"
               placeholder="Search your threads"
-              className="w-full border-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:ring-transparent"
+              className="w-full border-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:ring-transparent dark:bg-sidebar"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

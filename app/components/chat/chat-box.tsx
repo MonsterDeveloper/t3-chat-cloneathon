@@ -153,7 +153,7 @@ export const ChatInputBox = ({
   return (
     <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-10 w-full px-2 md:absolute md:px-4">
       <div className="relative mx-auto flex w-full max-w-full flex-col text-center sm:max-w-3xl">
-        <div className="pointer-events-auto w-full">
+        <div className="pointer-events-auto w-full rounded-t-xl bg-accent backdrop-blur-3xl">
           <form
             className="relative flex w-full flex-col items-stretch gap-2 rounded-t-xl border border-b-0 bg-background px-3 pt-3 pb-6 text-secondary-foreground outline-8 dark:border-[hsl(0,0%,83%)]/[0.04] dark:bg-secondary/[0.045] dark:outline-chat-background/40"
             style={{
@@ -175,7 +175,7 @@ export const ChatInputBox = ({
                 value={value}
                 onChange={onChange}
                 onKeyDown={handleKeyDown}
-                className="max-h-44 border-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="max-h-44 border-none shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-secondary/[0.045] "
                 placeholder="Type your message here..."
               />
               <div className="-mb-px mt-2 flex w-full flex-wrap justify-between">
