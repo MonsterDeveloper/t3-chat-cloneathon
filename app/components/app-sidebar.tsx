@@ -192,7 +192,10 @@ function ChatItem({ chat }: { chat: Chat }) {
                     inputRef.current?.value !== value &&
                     inputRef.current?.value.trim() !== ""
                   ) {
-                    fetcher.submit(event.currentTarget)
+                    const form = event.currentTarget.closest("form")
+                    if (form) {
+                      fetcher.submit(form, { flushSync: true })
+                    }
                   }
                   setIsEditing(false)
                 }}
