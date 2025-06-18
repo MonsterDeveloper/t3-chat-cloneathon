@@ -17,5 +17,11 @@
       "database_id": "cc3228ce-084d-4ab1-b864-a574ffb34332",
       "migrations_dir": "drizzle"
     }
+  ],
+  "r2_buckets": [
+    {
+      "bucket_name": "not-t3-chat-attachments",
+      "binding": "ATTACHMENTS"
+    }
   ]
 }

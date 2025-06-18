@@ -1,16 +1,17 @@
 import { ArrowUp, Paperclip, Square } from "lucide-react"
 
 import type { useChat } from "@ai-sdk/react"
-import type { ChatRequestOptions } from "ai"
 import {
   type ChangeEvent,
   type FormEvent,
   type KeyboardEvent,
+  useRef,
   useState,
 } from "react"
-import { Button } from "~/components/ui/button"
+import { Button, ToolTipButton } from "~/components/ui/button"
+import { useFetcherWithReset } from "~/hooks/use-fetcher-with-reset"
+import type { action } from "~/routes/api/attachments"
 import { type Model, ModelPopover } from "../model-popover"
-import { Label } from "../ui/label"
 import { Textarea } from "../ui/textarea"
 
 // https://openrouter.ai/models
@@ -130,14 +131,26 @@ export const ChatInputBox = ({
 }: {
   value: string
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void
-  onSubmit: (
-    event: FormEvent<HTMLFormElement>,
-    options: ChatRequestOptions,
-  ) => void
+  onSubmit: ReturnType<typeof useChat>["handleSubmit"]
   status: ReturnType<typeof useChat>["status"]
   stop: () => void
 }) => {
-  const [model, setModel] = useState<Model | undefined>(models[0])
+  const [model, setModel] = useState<Model>(models[0])
+  const attachmentsFetcher = useFetcherWithReset<typeof action>()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const submit: typeof onSubmit = (event) => {
+    onSubmit(event, {
+      data: { model: model.value },
+      experimental_attachments: attachmentsFetcher.data?.attachments?.map(
+        ({ id, contentType }) => ({
+          url: id,
+          contentType,
+        }),
+      ),
+    })
+    attachmentsFetcher.reset()
+  }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -146,10 +159,31 @@ export const ChatInputBox = ({
         const formEvent = new Event("submit", {
           cancelable: true,
         }) as unknown as FormEvent<HTMLFormElement>
-        onSubmit(formEvent, { data: { model: model.value } })
+        submit(formEvent)
       }
     }
   }
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+
+    if (!files) {
+      return
+    }
+
+    const formData = new FormData()
+
+    for (const file of files) {
+      formData.append("file", file)
+    }
+
+    attachmentsFetcher.submit(formData, {
+      method: "post",
+      encType: "multipart/form-data",
+      action: "/api/attachments",
+    })
+  }
+
   return (
     <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-10 w-full px-2 md:absolute md:px-4">
       <div className="relative mx-auto flex w-full max-w-full flex-col text-center sm:max-w-3xl">
@@ -160,15 +194,7 @@ export const ChatInputBox = ({
               boxShadow:
                 "rgba(0, 0, 0, 0.1) 0px 80px 50px 0px, rgba(0, 0, 0, 0.07) 0px 50px 30px 0px, rgba(0, 0, 0, 0.06) 0px 30px 15px 0px, rgba(0, 0, 0, 0.04) 0px 15px 8px, rgba(0, 0, 0, 0.04) 0px 6px 4px, rgba(0, 0, 0, 0.02) 0px 2px 2px",
             }}
-            onSubmit={(event) => {
-              if (model) {
-                onSubmit(event, {
-                  data: {
-                    model: model.value,
-                  },
-                })
-              }
-            }}
+            onSubmit={submit}
           >
             <div className="flex w-full flex-grow flex-col">
               <Textarea
@@ -188,14 +214,35 @@ export const ChatInputBox = ({
                         setModel(models.find((model) => model.value === value)!)
                       }}
                     />
-                    <Label className="flex items-center">
-                      <input type="file" className="hidden" />
-                      <input multiple className="sr-only" type="file" />
-                      <div className="flex items-center gap-1">
-                        <Paperclip className="size-4" />
-                        <span className="max-sm:hidden sm:ml-0.5">Attach</span>
+                    <ToolTipButton
+                      content={
+                        <>
+                          <p>Add an attachment.</p>
+                          <p>Accepts: Text, PNG, JPEG, GIF, WebP, HEIC</p>
+                        </>
+                      }
+                    >
+                      <div>
+                        <input
+                          multiple
+                          className="sr-only"
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                        />
+                        <Button
+                          variant="chatAction"
+                          className="gap-1"
+                          size="xs"
+                          onClick={() => {
+                            fileInputRef.current?.click()
+                          }}
+                        >
+                          <Paperclip className="size-4" />
+                          Attach
+                        </Button>
                       </div>
-                    </Label>
+                    </ToolTipButton>
                   </div>
                 </div>
                 <div

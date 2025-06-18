@@ -1,3 +1,4 @@
+import type { Attachment } from "ai"
 import { Check, Copy, Edit, GitMergeIcon, RefreshCcw } from "lucide-react"
 import { useState } from "react"
 import Markdown from "react-markdown"
@@ -11,12 +12,18 @@ interface MessageProps {
   content: string
   role: string
   model: string
+  attachments?: Attachment[]
 }
 
 const NEW_LINE_REGEX = /\n$/
 const LANGUAGE_REGEX = /language-(\w+)/
 
-export function ChatMessage({ content, role, model }: MessageProps) {
+export function ChatMessage({
+  content,
+  role,
+  model,
+  attachments,
+}: MessageProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -108,6 +115,17 @@ export function ChatMessage({ content, role, model }: MessageProps) {
           >
             {content}
           </Markdown>
+          {attachments?.map(
+            (attachment) =>
+              attachment.contentType?.startsWith("image/") && (
+                <img
+                  src={`/api/attachments/${attachment.url}`}
+                  className="size-16"
+                  alt="File attachment"
+                  key={attachment.url}
+                />
+              ),
+          )}
         </div>
 
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">

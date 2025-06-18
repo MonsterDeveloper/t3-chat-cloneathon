@@ -1,4 +1,5 @@
 import { type Message, useChat } from "@ai-sdk/react"
+import type { Attachment } from "ai"
 import { and, eq, sql } from "drizzle-orm"
 import { Moon, Plus, Search, Settings2 } from "lucide-react"
 import * as React from "react"
@@ -68,16 +69,55 @@ export async function loader({
     throw new Response("Not Found", { status: 404 })
   }
 
-  return {
-    chatId,
-    chats,
-    initialMessages: chat.messages.map((message) => {
+  // Process messages and fetch attachment metadata
+  const initialMessages = await Promise.all(
+    chat.messages.map(async (message) => {
+      let experimental_attachments: Attachment[] | undefined
+
+      if (message.attachmentIds) {
+        const attachmentIds = JSON.parse(message.attachmentIds) as string[]
+
+        // Fetch attachment metadata from R2 and check permissions
+        const validAttachments = await Promise.all(
+          attachmentIds.map(async (id) => {
+            const attachment = await context.cloudflare.env.ATTACHMENTS.get(id)
+
+            // Check if attachment exists and user has permission
+            if (
+              !attachment ||
+              attachment.customMetadata?.userId !== session.user.id
+            ) {
+              // Skip this attachment if not found or no permission
+              return null
+            }
+
+            return {
+              url: id,
+              contentType:
+                attachment.httpMetadata?.contentType ??
+                "application/octet-stream",
+            }
+          }),
+        )
+
+        experimental_attachments = validAttachments.filter(
+          Boolean,
+        ) as Attachment[]
+      }
+
       return {
         ...(JSON.parse(message.content) as Message),
+        experimental_attachments,
         createdAt: new Date(message.createdAt),
         id: message.id,
       }
     }),
+  )
+
+  return {
+    chatId,
+    chats,
+    initialMessages,
   }
 }
 
@@ -99,6 +139,8 @@ export default function Chat({
   })
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
+  console.log(messages)
+
   return (
     <SidebarProvider>
       <LeftFloatingControls />
@@ -115,6 +157,7 @@ export default function Chat({
                     key={crypto.randomUUID()}
                     content={message.content}
                     role={message.role}
+                    attachments={message.experimental_attachments}
                     model={"model"}
                   />
                 ))}

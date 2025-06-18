@@ -1,7 +1,7 @@
 import { Slot } from "@radix-ui/react-slot"
 import { type VariantProps, cva } from "class-variance-authority"
-import type * as React from "react"
 
+import type { ComponentProps, ReactNode } from "react"
 import { cn } from "~/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
 
@@ -21,10 +21,13 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        chatAction:
+          "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 text-xs cursor-pointer h-auto gap-2 rounded-full border border-solid border-secondary-foreground/10 text-muted-foreground ",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        xs: "h-[30px] px-2 py-1.5 pr-2.5 max-sm:p-2",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
       },
@@ -42,7 +45,7 @@ function Button({
   size,
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
+}: ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {
@@ -64,11 +67,11 @@ export function ToolTipButton({
   align = "center",
   content,
   ...tooltip
-}: React.ComponentProps<typeof TooltipContent> & {
+}: ComponentProps<typeof TooltipContent> & {
   className?: string
   asChild?: boolean
-  children: React.ReactNode
-  content: React.ReactNode
+  children: ReactNode
+  content: ReactNode
 }) {
   return (
     <Tooltip>
