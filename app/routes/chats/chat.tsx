@@ -16,6 +16,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { chatsTable, messagesTable } from "~/database/schema"
+import { useViewer } from "~/lib/auth-client"
 import { cn } from "~/lib/utils"
 import type { Route } from "./+types/chat"
 
@@ -99,38 +100,54 @@ export default function Chat({
     sendExtraMessageFields: true,
   })
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
+  const viewer = useViewer()
 
   const navigate = useNavigate()
 
-React.useEffect(() => {
-  const handleNewChatShortcut = (event: KeyboardEvent) => {
-    if (event.key === "o" && (event.metaKey || event.ctrlKey) && event.shiftKey) {
-      event.preventDefault()
-      navigate("/chats")
+  React.useEffect(() => {
+    const handleNewChatShortcut = (event: KeyboardEvent) => {
+      if (
+        event.key === "o" &&
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey
+      ) {
+        event.preventDefault()
+        navigate("/chats")
+      }
     }
-  }
-  window.addEventListener("keydown", handleNewChatShortcut)
-})
+    window.addEventListener("keydown", handleNewChatShortcut)
+  })
 
   return (
     <SidebarProvider>
       <LeftFloatingControls />
       <RightFloatingControls />
       <AppSidebar variant="inset" chats={chats} />
-      <SidebarInset className="m-0 h-screen overflow-hidden border border-accent bg-card shadow-none transition-all duration-300 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:rounded-none md:peer-data-[variant=inset]:mr-0 md:peer-data-[variant=inset]:mb-0">
+      <SidebarInset className="m-0 h-screen overflow-hidden border border-accent border-r-0 bg-card shadow-none transition-all duration-300 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:rounded-none md:peer-data-[variant=inset]:mr-0 md:peer-data-[variant=inset]:mb-0 md:peer-data-[variant=inset]:rounded-tr-none">
         <SiteHeader />
         <div className="flex flex-1 flex-col overflow-scroll pb-24">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col items-center justify-center gap-4 py-4 md:gap-6 md:py-6">
               <div className="flex w-full max-w-4xl flex-col items-center justify-center gap-4 px-4">
-                {messages.map((message) => (
-                  <ChatMessage
-                    key={crypto.randomUUID()}
-                    content={message.content}
-                    role={message.role}
-                    model={"model"}
-                  />
-                ))}
+                {messages.length < 1 && input.length < 1 ? (
+                  <div className="mt-40 flex flex-col items-center gap-4 py-4 md:gap-6 md:py-6">
+                    <h1 className="mb-2 font-bold text-2xl text-foreground">
+                      How can I help you, {viewer.name}?
+                    </h1>
+                    <p className="text-muted-foreground text-sm">
+                      Start a conversation by typing a message below.
+                    </p>
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <ChatMessage
+                      key={crypto.randomUUID()}
+                      content={message.content}
+                      role={message.role}
+                      model={"model"}
+                    />
+                  ))
+                )}
                 {error && (
                   <div className="w-full rounded-md bg-destructive/10 p-2 text-red-500 text-sm">
                     {error.message}
@@ -160,7 +177,7 @@ const LeftFloatingControls = () => {
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute top-4 left-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2",
+        "pointer-events-auto absolute top-4 left-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2 py-1",
         {
           hidden: state === "expanded" && !isMobile,
         },
@@ -170,12 +187,12 @@ const LeftFloatingControls = () => {
         <SidebarTrigger />
       </ToolTipButton>
       <ToolTipButton content="Search chats">
-        <Button variant="ghost" size="icon" className="p-0.5">
+        <Button variant="ghost" size="icon" className="size-7 p-0.5">
           <Search className="size-4 stroke-2" />
         </Button>
       </ToolTipButton>
       <ToolTipButton content="New chat">
-        <Button variant="ghost" size="icon" className="p-0.5" asChild>
+        <Button variant="ghost" size="icon" className="size-7 p-0.5" asChild>
           <Link to="/chats" prefetch="intent">
             <Plus className="size-5 stroke-2" />
           </Link>
@@ -192,14 +209,14 @@ const RightFloatingControls = () => {
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2 ",
+        "pointer-events-auto absolute top-4 right-4 z-50 flex items-center justify-center gap-1 rounded-sm bg-accent px-2 py-1",
         {
           hidden: isMobile,
         },
       )}
     >
       <ToolTipButton content="Settings">
-        <Button variant="ghost" size="icon" className="p-0.5" asChild>
+        <Button variant="ghost" size="icon" className="size-7 p-1" asChild>
           <Link
             to={{
               pathname: "/settings",
@@ -215,14 +232,29 @@ const RightFloatingControls = () => {
           </Link>
         </Button>
       </ToolTipButton>
-
       <ToolTipButton content="Toggle Dark Mode">
-        <Button variant="ghost" size="icon" className="p-0.5 " onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-          {theme === "dark" ? (
-            <Sun className="size-4 " />
-          ) : (
-            <Moon className="size-4" />
-          )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative size-7"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          <Sun
+            className={cn(
+              "absolute top-1.5 size-4 transition-all duration-300 ease-in-out",
+              theme === "light"
+                ? "rotate-0 scale-100 opacity-100"
+                : "rotate-90 scale-80 opacity-0",
+            )}
+          />
+          <Moon
+            className={cn(
+              "absolute top-1.5 size-4 transition-all duration-300 ease-in-out",
+              theme === "dark"
+                ? "rotate-0 scale-100 opacity-100"
+                : "-rotate-90 scale-80 opacity-0",
+            )}
+          />
         </Button>
       </ToolTipButton>
     </div>

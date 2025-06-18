@@ -74,15 +74,10 @@ export function Layout({ children }: { children: ReactNode }) {
 const ThemeWrapper = ({ children }: { children: ReactNode }) => {
   const { theme } = useTheme()
 
-  return (
-    <div className={theme}>
-      {children}
-    </div>
-  )
+  return <div className={theme}>{children}</div>
 }
 
 export default function App() {
-
   return <Outlet />
 }
 

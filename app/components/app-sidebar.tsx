@@ -373,7 +373,7 @@ export function AppSidebar({ chats: initialChats, ...props }: Props) {
               <h1 className="flex h-8 shrink-0 items-center justify-center text-lg text-muted-foreground transition-opacity delay-75 duration-75">
                 <Link
                   className="relative flex h-8 w-24 items-center justify-center font-semibold text-foreground text-sm"
-                  to="/chat"
+                  to="/chats"
                   data-discover="true"
                 >
                   <div className="h-3.5 select-none">

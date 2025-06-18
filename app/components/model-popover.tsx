@@ -209,9 +209,7 @@ const ModelListItem = ({
           <ModelIcon provider={model.provider} view={view} />
         </div>
         <div className="flex items-center space-x-2">
-          <span className="font-medium text-sm">
-            {model.label}
-          </span>
+          <span className="font-medium text-sm">{model.label}</span>
           {model.premium && <Sparkles className="size-4 text-pink-500" />}
           <Info className="size-4 text-gray-400" />
         </div>
