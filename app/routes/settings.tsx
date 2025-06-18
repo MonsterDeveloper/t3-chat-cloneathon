@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm"
 import { ArrowLeft } from "lucide-react"
+import { useEffect } from "react"
 import {
   type FetcherWithComponents,
   Link,
@@ -52,6 +53,20 @@ export default function SettingsPage() {
     ? hidePersonalInfoFetcher.formData.get("isHidePersonalInfoEnabled") ===
       "true"
     : viewer.isHidePersonalInfoEnabled
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We don't want to re-run this effect when the navigate function changes
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        navigate(rt ? `/chats/${rt}` : "/chats")
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape)
+    return () => {
+      window.removeEventListener("keydown", handleEscape)
+    }
+  }, [rt])
 
   return (
     <div className="h-screen w-full overflow-y-auto">
