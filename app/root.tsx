@@ -10,7 +10,10 @@ import {
 
 import type { Route } from "./+types/root"
 import "./app.css"
+import { useTheme } from "next-themes"
 import type { ReactNode } from "react"
+import { ClientOnly } from "./components/client-only"
+import { ThemeProvider } from "./components/theme-provider"
 import { Button } from "./components/ui/button"
 import { Toaster } from "./components/ui/sonner"
 
@@ -49,7 +52,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -57,13 +60,22 @@ export function Layout({ children }: { children: ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <Toaster />
+        <ThemeProvider defaultTheme="system" enableColorScheme>
+          <ClientOnly fallback={<div className="min-h-screen bg-background" />}>
+            {() => <ThemeWrapper>{children}</ThemeWrapper>}
+          </ClientOnly>
+        </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
   )
+}
+
+const ThemeWrapper = ({ children }: { children: ReactNode }) => {
+  const { theme } = useTheme()
+
+  return <div className={theme}>{children}</div>
 }
 
 export default function App() {

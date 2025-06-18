@@ -1,10 +1,11 @@
 import type { Attachment } from "ai"
 import { Check, Copy, Edit, GitMergeIcon, RefreshCcw } from "lucide-react"
+import { useTheme } from "next-themes"
 import { useState } from "react"
 import Markdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import materialLight from "react-syntax-highlighter/dist/esm/styles/prism/material-light"
 import remarkGfm from "remark-gfm"
+import { t3ChatDarkTheme, t3ChatLightTheme } from "~/lib/syntax-theme"
 import { cn } from "~/lib/utils"
 import { Button, ToolTipButton } from "../ui/button"
 
@@ -37,10 +38,12 @@ export function ChatMessage({
 
   const isUser = role === "user"
 
+  const { theme } = useTheme()
+
   return (
     <div
       className={cn(
-        "group relative flex w-full gap-4 p-2 **:text-md",
+        "group relative flex w-full gap-4 p-2 **:text-md *:dark:text-white",
         isUser ? "justify-end" : "justify-start",
       )}
     >
@@ -66,10 +69,10 @@ export function ChatMessage({
                 const language = match ? match[1] : ""
 
                 return match ? (
-                  <div className="group/code relative flex flex-col gap-2">
+                  <div className="group/code relative my-4 flex flex-col gap-0">
                     {/* Language label */}
                     <div className="flex h-10 items-center justify-between rounded-t-lg border-b bg-secondary/80 px-3 py-2 text-primary text-xs">
-                      <span className="font-medium">{language}</span>
+                      <span className="font-medium dark:text-white">{language}</span>
                       <Button
                         variant="ghost"
                         onClick={() =>
@@ -82,7 +85,9 @@ export function ChatMessage({
                     </div>
                     <SyntaxHighlighter
                       //@ts-expect-error TODO: fix types
-                      style={materialLight}
+                      style={
+                        theme === "dark" ? t3ChatDarkTheme : t3ChatLightTheme
+                      }
                       language={language}
                       PreTag="div"
                       className="!mt-0 !rounded-t-none py-4"

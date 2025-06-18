@@ -19,7 +19,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "hover:bg-primary/10 hover:text-accent-foreground dark:hover:bg-accent/80 dark:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         chatAction:
           "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 text-xs cursor-pointer h-auto gap-2 rounded-full border border-solid border-secondary-foreground/10 text-muted-foreground ",
@@ -78,7 +78,7 @@ export function ToolTipButton({
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent
         arrowClassName="opacity-0"
-        className="bg-accent/50 text-primary"
+        className="bg-accent text-primary "
         side={side}
         align={align}
         {...tooltip}

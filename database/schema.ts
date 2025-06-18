@@ -16,6 +16,8 @@ export const chatsTable = sqliteTable("chats", {
   isPinned: integer("is_pinned", { mode: "boolean" }).default(false).notNull(),
 })
 
+export type Chat = Omit<typeof chatsTable.$inferSelect, "userId" |  "updatedAt"> 
+
 export const chatsRelations = relations(chatsTable, ({ many }) => ({
   messages: many(messagesTable),
 }))
