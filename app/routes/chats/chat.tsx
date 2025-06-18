@@ -1,12 +1,13 @@
 import { type Message, useChat } from "@ai-sdk/react"
 import { and, eq, sql } from "drizzle-orm"
-import { Moon, Plus, Search, Settings2, Sun } from "lucide-react"
+import { Moon, Plus, Settings2, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import * as React from "react"
 import { Link, redirect, useLocation, useNavigate } from "react-router"
 import { AppSidebar } from "~/components/app-sidebar"
 import { ChatInputBox } from "~/components/chat/chat-box"
 import { ChatMessage } from "~/components/chat/chat-message"
+import { ChatSearch } from "~/components/chat/chat-search"
 import { SiteHeader } from "~/components/site-header"
 import { Button, ToolTipButton } from "~/components/ui/button"
 import {
@@ -15,7 +16,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "~/components/ui/sidebar"
-import { chatsTable, messagesTable } from "~/database/schema"
+import { type Chat as TChat, chatsTable, messagesTable } from "~/database/schema"
 import { useViewer } from "~/lib/auth-client"
 import { cn } from "~/lib/utils"
 import type { Route } from "./+types/chat"
@@ -120,7 +121,7 @@ export default function Chat({
 
   return (
     <SidebarProvider>
-      <LeftFloatingControls />
+      <LeftFloatingControls chats={chats} />
       <RightFloatingControls />
       <AppSidebar variant="inset" chats={chats} />
       <SidebarInset className="m-0 h-screen overflow-hidden border border-accent border-r-0 bg-card shadow-none transition-all duration-300 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:rounded-none md:peer-data-[variant=inset]:mr-0 md:peer-data-[variant=inset]:mb-0 md:peer-data-[variant=inset]:rounded-tr-none">
@@ -172,7 +173,7 @@ export default function Chat({
   )
 }
 
-const LeftFloatingControls = () => {
+const LeftFloatingControls = ({ chats }: { chats: TChat[] }) => {
   const { state, isMobile } = useSidebar()
   return (
     <div
@@ -186,11 +187,13 @@ const LeftFloatingControls = () => {
       <ToolTipButton content="Toggle Sidebar">
         <SidebarTrigger />
       </ToolTipButton>
-      <ToolTipButton content="Search chats">
+      {/* <ToolTipButton content="Search chats">
         <Button variant="ghost" size="icon" className="size-7 p-0.5">
           <Search className="size-4 stroke-2" />
         </Button>
-      </ToolTipButton>
+      </ToolTipButton> */}
+      <ChatSearch chats={chats} />
+
       <ToolTipButton content="New chat">
         <Button variant="ghost" size="icon" className="size-7 p-0.5" asChild>
           <Link to="/chats" prefetch="intent">

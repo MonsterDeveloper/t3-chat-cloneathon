@@ -73,10 +73,6 @@ export default function SettingsPage() {
       <div className="-z-50 fixed inset-0 dark:bg-sidebar">
         <div
           className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage:
-              "radial-gradient(closest-corner at 180px 36px, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0)), linear-gradient(rgb(254, 247, 255) 15%, rgb(244, 214, 250))",
-          }}
         />
         <div className="absolute inset-0 bg-noise" />
       </div>
@@ -113,7 +109,7 @@ export default function SettingsPage() {
           <div className="hidden flex-col items-center justify-center md:flex md:w-1/4">
             <Avatar
               className={cn(
-                "mx-auto size-40",
+                "mx-auto size-40 border-2 border-primary",
                 isHidePersonalInfoEnabled && "blur-sm",
               )}
             >
@@ -124,7 +120,7 @@ export default function SettingsPage() {
             </Avatar>
             <h1
               className={cn(
-                "mt-4 text-center font-bold text-2xl transition-opacity duration-200",
+                "mt-4 text-center font-bold text-2xl transition-opacity duration-200 dark:text-white",
                 isHidePersonalInfoEnabled && "blur-sm",
               )}
             >
@@ -132,7 +128,7 @@ export default function SettingsPage() {
             </h1>
             <p
               className={cn(
-                "text-center text-muted-foreground",
+                "text-center text-muted-foreground dark:text-white",
                 isHidePersonalInfoEnabled && "blur-sm",
               )}
             >
@@ -141,7 +137,7 @@ export default function SettingsPage() {
             <div className="mt-2 inline-flex items-center rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground text-xs">
               Free plan
             </div>
-            <div className="mt-8 w-full rounded-lg bg-card p-4">
+            <div className="mt-8 w-full rounded-lg bg-card p-4 **:dark:text-white">
               <span className="font-semibold text-sm">Keyboard Shortcuts</span>
               <div className="mt-6 grid gap-4">
                 <div className="flex items-center justify-between">

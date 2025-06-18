@@ -214,7 +214,7 @@ function ChatItem({ chat }: { chat: Chat }) {
               >
                 {value || "Untitled"}
               </Link>
-              <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] transition-all duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
+              <div className="absolute right-0 flex h-full translate-x-full items-center justify-center gap-1 rounded-md bg-sidebar-accent px-1 opacity-0 shadow-[-2px_0_4px_var(--sidebar-accent)] backdrop-blur-[2px] duration-100 group-hover/chat:translate-x-0 group-hover/chat:opacity-100">
                 <ToolTipButton content={chat.isPinned ? "Unpin" : "Pin"}>
                   <ChatPinButton chat={chat} />
                 </ToolTipButton>
@@ -456,7 +456,7 @@ export function AppSidebar({ chats: initialChats, ...props }: Props) {
             <Input
               type="text"
               placeholder="Search your threads"
-              className="w-full border-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:ring-transparent"
+              className="w-full border-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:ring-transparent dark:bg-sidebar"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
