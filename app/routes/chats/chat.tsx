@@ -139,8 +139,6 @@ export default function Chat({
   })
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
-  console.log(messages)
-
   return (
     <SidebarProvider>
       <LeftFloatingControls />

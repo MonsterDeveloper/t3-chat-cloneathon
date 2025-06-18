@@ -215,6 +215,7 @@ export const ChatInputBox = ({
                       }}
                     />
                     <ToolTipButton
+                      // @ts-expect-error weird bug in react types: Element is not assignable to ReactNode
                       content={
                         <>
                           <p>Add an attachment.</p>
